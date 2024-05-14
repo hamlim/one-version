@@ -1,16 +1,13 @@
 {
 	"name": "one-version",
 	"version": "0.0.1",
+	"description": "A strict dependency conformance tool for (mono)repos!",
 	"bin": {
 		"one-version": "./bin/index.mjs"
 	},
 	"type": "module",
 	"devDependencies": {
 		"@biomejs/biome": "1.6.3",
-		"@swc/cli": "0.3.10",
-		"@swc/core": "1.4.2",
-		"hohoro": "0.1.0",
-		"@types/bun": "latest",
 		"typescript": "5.4.5"
 	},
 	"scripts": {
