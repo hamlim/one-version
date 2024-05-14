@@ -1,0 +1,24 @@
+{
+  "name": "root",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "private": true,
+  "devDependencies": {
+    "@turbo/gen": "1.13.3",
+    "dprint": "0.45.0",
+    "turbo": "1.13.3"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build ",
+    "build:packages": "turbo run build --filter=./packages/*",
+    "type-check": "turbo run type-check",
+    "lint": "turbo run lint",
+    "format": "dprint fmt",
+    "format:check": "dprint check",
+    "test": "turbo run test",
+    "generator": "bun ./scripts/generator.ts"
+  }
+}
