@@ -1,12 +1,8 @@
 {
-	"name": "pkg-a",
+	"name": "one-version",
 	"version": "0.0.1",
-	"module": "index.ts",
-	"exports": {
-		".": {
-			"import": "./dist/index.js",
-			"types": "./dist/index.d.ts"
-		}
+	"bin": {
+		"one-version": "./bin/index.mjs"
 	},
 	"type": "module",
 	"devDependencies": {
@@ -18,11 +14,10 @@
 		"typescript": "5.4.5"
 	},
 	"scripts": {
-		"build": "hohoro",
 		"type-check": "tsc -p ./tsconfig.json",
-		"lint": "biome lint ./src/",
-		"test": "bun test",
-		"prepub": "bun run build && bun run type-check && bun run lint && bun run test",
+		"lint": "biome lint ./",
+		"test": "node --test",
+		"prepub": "bun run type-check && bun run lint && bun run test",
 		"pub": "npm publish --access public"
 	}
 }

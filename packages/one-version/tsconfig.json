@@ -19,5 +19,6 @@
 		"strict": true,
 		"noFallthroughCasesInSwitch": true,
 		"forceConsistentCasingInFileNames": true
-	}
+	},
+	"include": ["./one-version.mjs"]
 }
