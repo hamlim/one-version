@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "workspaces": [
+    "libs/*"
+  ],
+  "packageManager": "pnpm@9.1.1"
+}

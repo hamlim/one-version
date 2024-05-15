@@ -1,10 +1,17 @@
 {
 	"name": "one-version",
-	"version": "0.0.1",
+	"version": "0.1.0",
 	"description": "A strict dependency conformance tool for (mono)repos!",
 	"bin": {
 		"one-version": "./bin/index.mjs"
 	},
+	"files": [
+		"bin",
+		"one-version.mjs",
+		"utils",
+		"README.md",
+		"CHANGELOG.md"
+	],
 	"type": "module",
 	"devDependencies": {
 		"@biomejs/biome": "1.6.3",

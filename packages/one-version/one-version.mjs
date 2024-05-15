@@ -61,7 +61,6 @@ function inferPackageManager({ rootDirectory }) {
   if (existsSync(pathJoin(rootDirectory, "bun.lockb"))) {
     return "bun";
   }
-  throw new Error("Could not infer package manager! Please specify one in the config file.");
 }
 
 // MARK: Get Workspaces
@@ -78,7 +77,7 @@ function inferPackageManager({ rootDirectory }) {
 function getWorkspaces({ rootDirectory, packageManager }) {
   switch (packageManager) {
     case "pnpm": {
-      let stdout = exec("pnpm list -r --json --depth -1", { encoding: "utf8" });
+      let stdout = exec("pnpm list -r --json --depth -1", { cwd: rootDirectory, encoding: "utf8" }).trim();
       /**
        * @type {Array<{
        *   name: string;
@@ -92,6 +91,14 @@ function getWorkspaces({ rootDirectory, packageManager }) {
       return workspaces;
     }
     case "yarn-classic": {
+      // Silent still prints out some character escape sequences at the beginning that `trim` / `trimStart` doesn't remove
+      // Passing `--json` changes the output to be a stringified object of: `log` and `data`
+      // where `data` is a stringified object of workspace names and their dependencies
+      let stdout = exec("yarn --silent --json workspaces info", {
+        cwd: rootDirectory,
+        encoding: "utf8",
+      }).trim();
+      let output = JSON.parse(stdout);
       /**
        * @type {{
        *   [name: string]: {
@@ -101,10 +108,7 @@ function getWorkspaces({ rootDirectory, packageManager }) {
        *   }
        * }}
        */
-      let stdout = exec("yarn --silent workspaces info", {
-        encoding: "utf8",
-      });
-      let workspaces = JSON.parse(stdout);
+      let workspaces = JSON.parse(output.data);
       // Yarn Classic does not include the root package.
       let rootPackageJSONPath = path.join(rootDirectory, "package.json");
       let rootPackageJSON = JSON.parse(readFileSync(rootPackageJSONPath, { encoding: "utf8" }));
@@ -112,7 +116,7 @@ function getWorkspaces({ rootDirectory, packageManager }) {
       return [
         {
           name: rootPackageJSON.name,
-          path: rootPackageJSONPath,
+          path: rootDirectory,
         },
         ...Object.entries(workspaces).map(([name, { location }]) => ({
           name,
@@ -123,10 +127,11 @@ function getWorkspaces({ rootDirectory, packageManager }) {
     case "yarn-berry": {
       // http://ndjson.org/
       let ndJSONWorkspaces = exec("yarn workspaces list --json", {
+        cwd: rootDirectory,
         encoding: "utf8",
       });
 
-      if (ndJSONWorkspaces != "") {
+      if (ndJSONWorkspaces !== "") {
         /**
          * @type {Array<{
          *   name: string;
@@ -247,7 +252,7 @@ function getDuplicateDependencies({ workspaceDependencies, overrides }) {
     { name: consumerName, dependencies, peerDependencies, devDependencies },
   ) => {
     if (dependencies) {
-      Object.entries(dependencies).forEach(([packageName, version]) => {
+      for (let [packageName, version] of Object.entries(dependencies)) {
         let seenConsumers = acc[packageName]?.[version]?.direct || [];
         let versionConsumers = seenConsumers.concat(consumerName);
         acc[packageName] = {
@@ -257,10 +262,10 @@ function getDuplicateDependencies({ workspaceDependencies, overrides }) {
             direct: versionConsumers,
           },
         };
-      });
+      }
     }
     if (peerDependencies) {
-      Object.entries(peerDependencies).forEach(([packageName, version]) => {
+      for (let [packageName, version] of Object.entries(peerDependencies)) {
         let seenConsumers = acc[packageName]?.[version]?.peer || [];
         let versionConsumers = seenConsumers.concat(consumerName);
         acc[packageName] = {
@@ -270,10 +275,10 @@ function getDuplicateDependencies({ workspaceDependencies, overrides }) {
             peer: versionConsumers,
           },
         };
-      });
+      }
     }
     if (devDependencies) {
-      Object.entries(devDependencies).forEach(([packageName, version]) => {
+      for (let [packageName, version] of Object.entries(devDependencies)) {
         let seenConsumers = acc[packageName]?.[version]?.dev || [];
         let versionConsumers = seenConsumers.concat(consumerName);
         acc[packageName] = {
@@ -283,7 +288,7 @@ function getDuplicateDependencies({ workspaceDependencies, overrides }) {
             dev: versionConsumers,
           },
         };
-      });
+      }
     }
     return acc;
   }, {});
@@ -345,11 +350,8 @@ let DOUBLE_INDENT = SINGLE_INDENT * 2;
  *   direct: mock-app-b
  */
 function getVersionString(version, dependencyTypeStrings) {
-  return (
-    version.padStart(SINGLE_INDENT + version.length)
-    + "\n"
-    + dependencyTypeStrings.join("\n")
-  );
+  return `${version.padStart(SINGLE_INDENT + version.length)}
+${dependencyTypeStrings.join("\n")}`;
 }
 
 /**
@@ -359,7 +361,7 @@ function getVersionString(version, dependencyTypeStrings) {
  */
 function getTypeString({ type, names }) {
   const padded = type.padStart(DOUBLE_INDENT + type.length);
-  return `${padded}: ` + names.join(", ");
+  return `${padded}:  ${names.join(", ")}`;
 }
 
 function prettify(packages) {
@@ -404,7 +406,14 @@ export async function start({ rootDirectory, logger, args, exit }) {
     case "check": {
       let initialConfig = loadConfig({ rootDirectory });
       if (!initialConfig.packageManager) {
-        initialConfig.packageManager = inferPackageManager({ rootDirectory });
+        let inferredPackageManager = inferPackageManager({ rootDirectory });
+        if (typeof inferredPackageManager !== "string") {
+          logger.error("Could not infer package manager! Please specify one in the config file.");
+          return Promise.resolve({
+            statusCode: 1,
+          });
+        }
+        initialConfig.packageManager = inferredPackageManager;
       }
       debug("Initial config", JSON.stringify(initialConfig, null, 2));
       let workspaces = getWorkspaces({ rootDirectory, packageManager: initialConfig.packageManager });

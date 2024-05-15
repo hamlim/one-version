@@ -1,0 +1,9 @@
+{
+  "packageManager": "bun",
+  "overrides": {
+    "typescript": {
+      "^5.4": ["pkg-b"],
+      "^5": ["pkg-a"]
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "workspaces": [
+    "libs/*"
+  ],
+  "packageManager": "npm@10.7.0"
+}
