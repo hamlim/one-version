@@ -31,7 +31,7 @@ describe("one-version integration tests", () => {
   // copy the `__fixtures__/template-monorepo` into the following directories
   // - `__fixtures__/npm`
   // - `__fixtures__/pnpm`
-  // - `__fixtures__/yarn`
+  // - `__fixtures__/yarn-classic`
   // - `__fixtures__/yarn-berry`
   // - `__fixtures__/bun`
   // - `__fixtures__/missing`
@@ -41,7 +41,7 @@ describe("one-version integration tests", () => {
     let targetDirs = [
       "npm",
       "pnpm",
-      "yarn",
+      "yarn-classic",
       "yarn-berry",
       "bun",
       "missing",
@@ -70,7 +70,7 @@ describe("one-version integration tests", () => {
     let lockFile = {
       npm: "package-lock.json",
       pnpm: "pnpm-lock.yaml",
-      yarn: "yarn.lock",
+      "yarn-classic": "yarn.lock",
       "yarn-berry": "yarn.lock",
       bun: "bun.lock",
     };
@@ -85,6 +85,9 @@ describe("one-version integration tests", () => {
         if (dir === "yarn-berry") {
           await fsPromises.writeFile(".yarnrc.yml", "nodeLinker: node-modules");
         }
+        if (dir === "pnpm") {
+          await fsPromises.writeFile("pnpm-workspace.yaml", "packages: ['libs/*']\n");
+        }
       } catch (err) {
         throw err;
       }
@@ -96,7 +99,7 @@ describe("one-version integration tests", () => {
     const targetDirs = [
       "npm",
       "pnpm",
-      "yarn",
+      "yarn-classic",
       "yarn-berry",
       "bun",
       "missing",
@@ -118,22 +121,26 @@ describe("one-version integration tests", () => {
 
   test("npm", async () => {
     const targetDir = path.join(__dirname, "..", "__fixtures__", "npm");
-    await start({ rootDirectory: targetDir, logger: console });
+    let exitStatus;
+    function exit(exitCode) {
+      exitStatus = exitCode;
+    }
+    await start({ rootDirectory: targetDir, logger: console, args: ["check"], exit });
     // let { stdout } = await exec("npm run --silent --workspaces -- lerna version --json");
     // let versions = JSON.parse(stdout);
     // assert.equal(versions.length, 1);
     // assert.equal(versions[0].name, "one-version");
   });
   test("pnpm", async () => {
-    const targetDir = path.join(__dirname, "..", "__fixtures__", "npm");
+    const targetDir = path.join(__dirname, "..", "__fixtures__", "pnpm");
     await start({ rootDirectory: targetDir, logger: console });
     // let { stdout } = await exec("npm run --silent --workspaces -- lerna version --json");
     // let versions = JSON.parse(stdout);
     // assert.equal(versions.length, 1);
     // assert.equal(versions[0].name, "one-version");
   });
-  test("yarn", async () => {
-    const targetDir = path.join(__dirname, "..", "__fixtures__", "npm");
+  test("yarn-classic", async () => {
+    const targetDir = path.join(__dirname, "..", "__fixtures__", "yarn");
     await start({ rootDirectory: targetDir, logger: console });
     // let { stdout } = await exec("npm run --silent --workspaces -- lerna version --json");
     // let versions = JSON.parse(stdout);
@@ -141,7 +148,7 @@ describe("one-version integration tests", () => {
     // assert.equal(versions[0].name, "one-version");
   });
   test("yarn-berry", async () => {
-    const targetDir = path.join(__dirname, "..", "__fixtures__", "npm");
+    const targetDir = path.join(__dirname, "..", "__fixtures__", "yarn-berry");
     await start({ rootDirectory: targetDir, logger: console });
     // let { stdout } = await exec("npm run --silent --workspaces -- lerna version --json");
     // let versions = JSON.parse(stdout);
@@ -149,7 +156,7 @@ describe("one-version integration tests", () => {
     // assert.equal(versions[0].name, "one-version");
   });
   test("bun", async () => {
-    const targetDir = path.join(__dirname, "..", "__fixtures__", "npm");
+    const targetDir = path.join(__dirname, "..", "__fixtures__", "bun");
     await start({ rootDirectory: targetDir, logger: console });
     // let { stdout } = await exec("npm run --silent --workspaces -- lerna version --json");
     // let versions = JSON.parse(stdout);
@@ -157,7 +164,7 @@ describe("one-version integration tests", () => {
     // assert.equal(versions[0].name, "one-version");
   });
   test("missing", async () => {
-    const targetDir = path.join(__dirname, "..", "__fixtures__", "npm");
+    const targetDir = path.join(__dirname, "..", "__fixtures__", "missing");
     await start({ rootDirectory: targetDir, logger: console });
     // let { stdout } = await exec("npm run --silent --workspaces -- lerna version --json");
     // let versions = JSON.parse(stdout);

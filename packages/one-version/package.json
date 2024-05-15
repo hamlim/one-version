@@ -10,6 +10,9 @@
 		"@biomejs/biome": "1.6.3",
 		"typescript": "5.4.5"
 	},
+	"dependencies": {
+		"fast-glob": "3.3.2"
+	},
 	"scripts": {
 		"type-check": "tsc -p ./tsconfig.json",
 		"lint": "biome lint ./",

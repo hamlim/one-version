@@ -26,11 +26,26 @@ Add a `one-version:check` script to your root `package.json`:
 
 ```jsonc
 {
-  // one of: "bun", "yarn-berry", "yarn", "pnpm", "npm"
+  // one of: "bun", "yarn-berry", "yarn-classic", "pnpm", "npm"
   // by default it will try to detect the package manager based on the presence of a lockfile
   "packageManager": "bun",
+  // A mapping of dependencies, and which workspaces are "allowed" to use different versions
+  "overrides": {
+    "react": {
+      "18.0.0": ["pkg-a"],
+      "17.0.0": ["pkg-b"]
+    }
+  }
 }
 ```
+
+### Supported Package Managers/Versions:
+
+- Bun (`bun`)
+- Yarn Berry (`yarn-berry`) - Yarn versions 2.x, 3.x, 4.x
+- Yarn Classic (`yarn-classic`) - Yarn versions 1.x
+- PNPM (`pnpm`)
+- NPM (`npm`) - npm versions 7.x and greater
 
 ## Inspiration:
 
