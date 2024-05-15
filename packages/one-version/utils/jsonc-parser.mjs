@@ -1,6 +1,36 @@
 // Mostly all of this is lifted from `jsonc-parser` package
 // See: https://github.com/microsoft/node-jsonc-parser/tree/b6b34ba39da3f5bee17d41004c03a86686dade4c
 
+const SyntaxKind = {
+  OpenBraceToken: 1,
+  CloseBraceToken: 2,
+  OpenBracketToken: 3,
+  CloseBracketToken: 4,
+  CommaToken: 5,
+  ColonToken: 6,
+  NullKeyword: 7,
+  TrueKeyword: 8,
+  FalseKeyword: 9,
+  StringLiteral: 10,
+  NumericLiteral: 11,
+  LineCommentTrivia: 12,
+  BlockCommentTrivia: 13,
+  LineBreakTrivia: 14,
+  Trivia: 15,
+  Unknown: 16,
+  EOF: 17,
+};
+
+const ScanError = {
+  None: 0,
+  UnexpectedEndOfComment: 1,
+  UnexpectedEndOfString: 2,
+  UnexpectedEndOfNumber: 3,
+  InvalidUnicode: 4,
+  InvalidEscapeCharacter: 5,
+  InvalidCharacter: 6,
+};
+
 /**
  * Parses the given text and returns the object the JSON content represents. On invalid input, the parser tries to be as fault tolerant as possible, but still return a result.
  * Therefore always check the errors list to find out if the input was valid.
@@ -177,7 +207,6 @@ export function visit(text, visitor, options = { allowTrailingComma: false }) {
         if (skipUntilAfter.indexOf(token) !== -1) {
           scanNext();
           break;
-          // biome-ignore lint/style/noUselessElse: don't feel confident that the recommended change is safe
         } else if (skipUntil.indexOf(token) !== -1) {
           break;
         }
@@ -734,3 +763,104 @@ export function createScanner(text, ignoreTrivia = false) {
     getTokenError: () => scanError,
   };
 }
+
+function isWhiteSpace(ch) {
+  return ch === CharacterCodes.space || ch === CharacterCodes.tab;
+}
+
+function isLineBreak(ch) {
+  return ch === CharacterCodes.lineFeed || ch === CharacterCodes.carriageReturn;
+}
+
+function isDigit(ch) {
+  return ch >= CharacterCodes._0 && ch <= CharacterCodes._9;
+}
+
+const CharacterCodes = {
+  lineFeed: 0x0A, // \n
+  carriageReturn: 0x0D, // \r
+
+  space: 0x0020, // " "
+
+  _0: 0x30,
+  _1: 0x31,
+  _2: 0x32,
+  _3: 0x33,
+  _4: 0x34,
+  _5: 0x35,
+  _6: 0x36,
+  _7: 0x37,
+  _8: 0x38,
+  _9: 0x39,
+
+  a: 0x61,
+  b: 0x62,
+  c: 0x63,
+  d: 0x64,
+  e: 0x65,
+  f: 0x66,
+  g: 0x67,
+  h: 0x68,
+  i: 0x69,
+  j: 0x6A,
+  k: 0x6B,
+  l: 0x6C,
+  m: 0x6D,
+  n: 0x6E,
+  o: 0x6F,
+  p: 0x70,
+  q: 0x71,
+  r: 0x72,
+  s: 0x73,
+  t: 0x74,
+  u: 0x75,
+  v: 0x76,
+  w: 0x77,
+  x: 0x78,
+  y: 0x79,
+  z: 0x7A,
+
+  A: 0x41,
+  B: 0x42,
+  C: 0x43,
+  D: 0x44,
+  E: 0x45,
+  F: 0x46,
+  G: 0x47,
+  H: 0x48,
+  I: 0x49,
+  J: 0x4A,
+  K: 0x4B,
+  L: 0x4C,
+  M: 0x4D,
+  N: 0x4E,
+  O: 0x4F,
+  P: 0x50,
+  Q: 0x51,
+  R: 0x52,
+  S: 0x53,
+  T: 0x54,
+  U: 0x55,
+  V: 0x56,
+  W: 0x57,
+  X: 0x58,
+  Y: 0x59,
+  Z: 0x5a,
+
+  asterisk: 0x2A, // *
+  backslash: 0x5C, // \
+  closeBrace: 0x7D, // }
+  closeBracket: 0x5D, // ]
+  colon: 0x3A, // :
+  comma: 0x2C, // ,
+  dot: 0x2E, // .
+  doubleQuote: 0x22, // "
+  minus: 0x2D, // -
+  openBrace: 0x7B, // {
+  openBracket: 0x5B, // [
+  plus: 0x2B, // +
+  slash: 0x2F, // /
+
+  formFeed: 0x0C, // \f
+  tab: 0x09, // \t
+};

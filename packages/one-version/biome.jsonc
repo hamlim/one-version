@@ -4,6 +4,7 @@
 		"enabled": true
 	},
 	"linter": {
+		"ignore": ["jsonc-parser.mjs"],
 		"enabled": true,
 		"rules": {
 			"recommended": true,
