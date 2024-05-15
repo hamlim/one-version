@@ -1,5 +1,10 @@
 ### Unreleased:
 
+### [0.1.1] - May 15th, 2024
+
+- Added homepage to package.json, and repo info
+- Add link to docs in README
+
 ### [0.1.0] - May 15th, 2024
 
 - Update description in package.json

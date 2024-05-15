@@ -1,7 +1,14 @@
 {
 	"name": "one-version",
-	"version": "0.1.0",
+	"version": "0.1.1",
+	"homepage": "https://one-version.vercel.app/",
 	"description": "A strict dependency conformance tool for (mono)repos!",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/hamlim/one-version",
+		"directory": "packages/one-version"
+	},
+	"license": "MIT",
 	"bin": {
 		"one-version": "./bin/index.mjs"
 	},
