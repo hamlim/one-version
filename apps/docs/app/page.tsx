@@ -142,6 +142,8 @@ export default function Home() {
 
         <Code lang="json">
           {`{
+  // The schema for the configuration file
+  "$schema": "https://one-version.vercel.app/schema.json",
   // One of the supported package managers:
   // 'bun', 'pnpm', 'npm', 'yarn-classic', 'yarn-berry'
   "packageManager": "bun",
