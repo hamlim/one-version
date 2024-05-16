@@ -1,0 +1,4 @@
+{
+  "$schema": "./apps/docs/public/schema.json",
+  "packageManager": "bun"
+}

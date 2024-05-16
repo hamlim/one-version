@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://one-version.vercel.app/schema.json",
+  "title": "One Version Configuration",
+  "description": "The configuration for the one-version NPM package",
+  "type": "object",
+  "properties": {
+    "packageManager": {
+      "type": "string",
+      "enum": ["bun", "yarn-berry", "yarn-classic", "pnpm", "npm"],
+      "description": "The package manager to use. Defaults to detecting based on the presence of a lockfile."
+    },
+    "overrides": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-zA-Z0-9@/._-]+$": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false,
+      "description": "A mapping of dependencies and which workspaces are allowed to use different versions."
+    }
+  },
+  "required": ["packageManager"],
+  "additionalProperties": false
+}
