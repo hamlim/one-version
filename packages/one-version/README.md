@@ -28,6 +28,7 @@ Add a `one-version:check` script to your root `package.json`:
 
 ```jsonc
 {
+  "$schema": "https://one-version.vercel.app/schema.json",
   // one of: "bun", "yarn-berry", "yarn-classic", "pnpm", "npm"
   // by default it will try to detect the package manager based on the presence of a lockfile
   "packageManager": "bun",
@@ -35,9 +36,14 @@ Add a `one-version:check` script to your root `package.json`:
   "overrides": {
     "react": {
       "18.0.0": ["pkg-a"],
-      "17.0.0": ["pkg-b"]
+      // Wildcards are supported, and will capture any workspaces!
+      "17.0.0": ["*"]
     }
-  }
+  },
+  // one of: "pin", "loose", defaults to `loose` if not provided
+  // pin: all dependencies and devDependencies must use an exact version
+  // meaning no ranges (`^`, `~`, `.x`, etc.) are allowed
+  "versionStrategy": "pin"
 }
 ```
 
@@ -51,9 +57,15 @@ Add a `one-version:check` script to your root `package.json`:
 
 ## Inspiration:
 
-This is effectively a fork of the [wayfair/one-version](https://github.com/wayfair/one-version) project, which I had partially contributed to while I was at Wayfair. This fork is intended to be a slimmer re-write of the original project, aiming to support the same functionality (eventually), with also supporting `bun`!
+This is effectively a fork of the [wayfair/one-version](https://github.com/wayfair/one-version) project, which I had partially contributed to while I was at Wayfair. This fork is intended to be a slimmer re-write of the original project, aiming to support the same functionality (eventually)!
 
 This tool should be a drop-in replacement for `@wayfair/one-version`, if you run into any issues or collisions, please open an issue!
+
+This package also notably includes a few additional features:
+
+- Support for `npm` and `bun` package managers
+- Support for wildcards (`"*"`) within the `overrides` configuration
+- Support for `"versionStrategy"` configuration to enforce strict versioning across the repo!
 
 ## Contributing:
 

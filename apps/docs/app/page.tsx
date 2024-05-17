@@ -34,6 +34,10 @@ export default function Home() {
           One Version is a strict dependency conformance tool for monorepos, managing dependencies across repos has
           never been easier!
         </P>
+        <P>
+          This tool ensures that all workspaces in your monorepo are using the same version of a dependency, and also an
+          (opt-in) strict versioning strategy to ensure that all dependencies are pinned to an exact version.
+        </P>
 
         <div className="pt-10 flex row justify-evenly items-center">
           <Button asChild>
@@ -142,21 +146,22 @@ export default function Home() {
 
         <Code lang="json">
           {`{
-  // The schema for the configuration file
   "$schema": "https://one-version.vercel.app/schema.json",
-  // One of the supported package managers:
-  // 'bun', 'pnpm', 'npm', 'yarn-classic', 'yarn-berry'
+  // one of: "bun", "yarn-berry", "yarn-classic", "pnpm", "npm"
+  // by default it will try to detect the package manager based on the presence of a lockfile
   "packageManager": "bun",
-  // A mapping of overrides, where the key is the dependency name, and the value is a map of
-  // version specifier to an array of workspaces that are allowed to use that version.
+  // A mapping of dependencies, and which workspaces are "allowed" to use different versions
   "overrides": {
     "react": {
-      // in this example, pkg-a is allowed to use react@18
-      // and pkg-b is allowed to use react@17
       "18.0.0": ["pkg-a"],
-      "17.0.0": ["pkg-b"]
+      // Wildcards are supported, and will capture any workspaces!
+      "17.0.0": ["*"]
     }
-  }
+  },
+  // one of: "pin", "loose", defaults to "loose" if not provided
+  // pin: all dependencies and devDependencies must use an exact version
+  // meaning no ranges (\`^\`, \`~\`, \`.x\`, etc.) are allowed
+  "versionStrategy": "pin"
 }`}
         </Code>
       </section>

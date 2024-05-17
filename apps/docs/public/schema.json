@@ -25,6 +25,11 @@
       },
       "additionalProperties": false,
       "description": "A mapping of dependencies and which workspaces are allowed to use different versions."
+    },
+    "versionStrategy": {
+      "type": "string",
+      "enum": ["pin", "loose"],
+      "description": "The versioning strategy to use across the repo, defaults to 'loose'."
     }
   },
   "required": ["packageManager"],

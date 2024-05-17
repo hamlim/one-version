@@ -15,10 +15,12 @@ let debug = createDebug("one-version");
  * @typedef {string} WorkspaceName    - Name of workspace, e.g. "one-version"
  * @typedef {'yarn-classic' | 'yarn-berry' | 'npm' | 'pnpm' | 'bun'} PackageManager
  * @typedef {Record<PackageName, Record<VersionSpecifier, Array<WorkspaceName>>} Overrides
+ * @typedef {'pin' | 'loose'} VersionStrategy
  *
  * @typedef {object} Config
  * @property {PackageManager} packageManager
  * @property {Overrides} overrides
+ * @property {VersionStrategy} versionStrategy
  */
 
 /**
@@ -306,7 +308,9 @@ function getDuplicateDependencies({ workspaceDependencies, overrides }) {
         let filteredVersions = Object.entries(versions)
           .map(([version, { direct, peer, dev }]) => {
             let filteredPackages = {};
-            let notOverridden = (packageName) => !packageOverrides[version]?.includes(packageName);
+            let notOverridden = (packageName) =>
+              // If it's not a direct match on the packageName (workspaceName) and if it's not a wildcard match
+              !packageOverrides[version]?.includes(packageName) && !packageOverrides[version]?.includes("*");
             if (direct) {
               let directDependencies = direct.filter(notOverridden);
               if (directDependencies.length > 0) {
@@ -382,6 +386,73 @@ function prettify(packages) {
     .join("\n");
 }
 
+// MARK: Get Unpinned Dependencies
+
+/**
+ * @param {object} options
+ * @param {Array<WorkspaceDependencies>} options.workspaceDependencies
+ * @param {Overrides} options.overrides
+ * @returns {Record<WorkspaceName, Array<string>>}
+ *
+ * exported for tests only
+ */
+export function getUnpinnedDependencies({ workspaceDependencies, overrides }) {
+  let unpinnedDependencies = {};
+  // Notably - omit peerDeps since those can be semver ranges
+  for (let { name: workspaceName, dependencies, devDependencies } of workspaceDependencies) {
+    let allDependencies = { ...dependencies, ...devDependencies };
+    for (let [packageName, version] of Object.entries(allDependencies)) {
+      // Let `file:`, `url:`, `git:`, `link:`, and `workspace:*` dependencies pass currently
+      if (
+        version.startsWith("file:")
+        || version.startsWith("url:")
+        || version.startsWith("git:")
+        || version.startsWith("link:")
+        || version === "workspace:*"
+      ) {
+        continue;
+      }
+      if (
+        version.startsWith("^")
+        || version.startsWith("~")
+        // any version
+        || version.includes("*")
+        // range versions
+        || version.includes(".x")
+        || version.includes(".X")
+        || version.includes(" - ")
+        || version.includes(" || ")
+        // Greater Than, Less Than
+        || version.includes(">")
+        || version.includes("<")
+        // Keywords:
+        || version === "latest"
+        || version === "canary"
+        || version === "next"
+        || version === "beta"
+        || version === "alpha"
+        || version === "rc"
+        || version === "dev"
+        // workspace custom semver range deps
+        || version.startsWith("workspace:^")
+        || version.startsWith("workspace:~")
+      ) {
+        if (
+          // If we've overridden this specific package@version for this specific workspace
+          overrides?.[packageName]?.[version]?.includes(workspaceName)
+          // or if we've overridden this specific package@version for any workspace
+          || overrides?.[packageName]?.[version]?.includes("*")
+        ) {
+          continue;
+        }
+        unpinnedDependencies[workspaceName] = unpinnedDependencies[workspaceName] || [];
+        unpinnedDependencies[workspaceName].push(`${packageName}@${version}`);
+      }
+    }
+  }
+  return unpinnedDependencies;
+}
+
 // MARK: Start
 let usageLogs = [
   "",
@@ -399,7 +470,7 @@ let usageLogs = [
  * @param {Array<string>} options.args
  * @param {Function} options.exit
  */
-export async function start({ rootDirectory, logger, args, exit }) {
+export async function start({ rootDirectory, logger, args }) {
   let [firstArg] = args;
 
   switch (firstArg) {
@@ -415,6 +486,9 @@ export async function start({ rootDirectory, logger, args, exit }) {
         }
         initialConfig.packageManager = inferredPackageManager;
       }
+      if (!initialConfig.versionStrategy) {
+        initialConfig.versionStrategy = "loose";
+      }
       debug("Initial config", JSON.stringify(initialConfig, null, 2));
       let workspaces = getWorkspaces({ rootDirectory, packageManager: initialConfig.packageManager });
       debug("Workspaces", JSON.stringify(workspaces, null, 2));
@@ -422,31 +496,56 @@ export async function start({ rootDirectory, logger, args, exit }) {
       let workspaceDependencies = workspaces.map(({ path }) => getDependencies({ path }));
       debug("Workspaces Dependencies", JSON.stringify(workspaceDependencies, null, 2));
 
+      // Check for duplicate and mismatched versions of dependencies
       let duplicateDependencies = getDuplicateDependencies({
         workspaceDependencies,
         overrides: initialConfig.overrides,
       });
       debug("Duplicate dependencies", JSON.stringify(duplicateDependencies, null, 2));
 
+      let pendingStatusCode = 0;
+      let status = "✅";
+
       if (duplicateDependencies.length > 0) {
+        status = "🚫";
         logger.log(
           "You shall not pass!\n",
           "🚫 One Version Rule Failure - found multiple versions of the following dependencies:\n",
           prettify(duplicateDependencies),
         );
 
-        logger.error("More than one version of dependencies found. See above output.");
-        return Promise.resolve({
-          statusCode: 1,
-        });
+        pendingStatusCode = 1;
       }
 
-      logger.log(
-        "My preciousss\n",
-        "✨ One Version Rule Success - found no version conflicts!",
-      );
+      // check versionStrategy
+      if (initialConfig.versionStrategy === "pin") {
+        // check if all dependencies are pinned
+        let unpinnedDependencies = getUnpinnedDependencies({
+          workspaceDependencies,
+          overrides: initialConfig.overrides,
+        });
+        debug("Unpinned dependencies", JSON.stringify(unpinnedDependencies, null, 2));
+
+        if (Object.keys(unpinnedDependencies).length > 0) {
+          status = "🚫";
+          logger.log(
+            "🚫 One Version Rule Failure - found unpinned dependencies (with versionStrategy: 'pin'):\n",
+            Object.entries(unpinnedDependencies).map(([workspaceName, deps]) => {
+              return `${workspaceName}:\n- ${deps.join("\n -")}`;
+            }).join("\n\n"),
+          );
+          pendingStatusCode = 1;
+        }
+      }
+
+      if (status === "✅") {
+        logger.log(
+          "My preciousss\n",
+          "✨ One Version Rule Success - found no version conflicts!",
+        );
+      }
       return Promise.resolve({
-        statusCode: 0,
+        statusCode: pendingStatusCode,
       });
     }
     case "help": {
