@@ -197,13 +197,12 @@ export default function Home() {
       <footer className={sectionClasses}>
         <P>
           The source code for the library is available on{" "}
-          <Link href="https://github.com/hamlim/hohoro">GitHub</Link>. If you run into any bugs, please report them via
-          {" "}
-          <Link href="https://github.com/hamlim/hohoro/issues/new">issues</Link>.
+          <Link href="https://github.com/hamlim/one-version">GitHub</Link>. If you run into any bugs, please report them
+          via <Link href="https://github.com/hamlim/one-version/issues/new">issues</Link>.
         </P>
         <P>
           If you&apos;d like to discuss changes to the project, feel free to start a{" "}
-          <Link href="https://github.com/hamlim/hohoro/discussions/new/choose">discussion</Link>!
+          <Link href="https://github.com/hamlim/one-version/discussions/new/choose">discussion</Link>!
         </P>
       </footer>
     </main>
