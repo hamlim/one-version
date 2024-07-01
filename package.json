@@ -8,8 +8,8 @@
   "devDependencies": {
     "@turbo/gen": "1.13.3",
     "dprint": "0.45.0",
-    "turbo": "1.13.3",
-    "one-version": "workspace:*"
+    "one-version": "workspace:*",
+    "turbo": "2.0.6"
   },
   "scripts": {
     "dev": "turbo run dev",
@@ -22,5 +22,6 @@
     "test": "turbo run test",
     "one-version:check": "one-version check",
     "generator": "bun ./scripts/generator.ts"
-  }
+  },
+  "packageManager": "bun@1.1.17"
 }
