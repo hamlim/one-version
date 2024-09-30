@@ -54,6 +54,7 @@ Add a `one-version:check` script to your root `package.json`:
 - Yarn Classic (`yarn-classic`) - Yarn versions 1.x
 - PNPM (`pnpm`)
 - NPM (`npm`) - npm versions 7.x and greater
+- Deno (`deno`) - When using `package.json`
 
 ## Inspiration:
 
