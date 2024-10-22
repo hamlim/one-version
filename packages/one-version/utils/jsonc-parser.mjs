@@ -35,9 +35,13 @@ const ScanError = {
  * Parses the given text and returns the object the JSON content represents. On invalid input, the parser tries to be as fault tolerant as possible, but still return a result.
  * Therefore always check the errors list to find out if the input was valid.
  */
-export function parse(text, errors = [], options = {
-  allowTrailingComma: false,
-}) {
+export function parse(
+  text,
+  errors = [],
+  options = {
+    allowTrailingComma: false,
+  },
+) {
   let currentProperty = null;
   let currentParent = [];
   const previousParents = [];
@@ -95,49 +99,49 @@ export function visit(text, visitor, options = { allowTrailingComma: false }) {
   function toNoArgVisit(visitFunction) {
     return visitFunction
       ? () =>
-        visitFunction(
-          _scanner.getTokenOffset(),
-          _scanner.getTokenLength(),
-          _scanner.getTokenStartLine(),
-          _scanner.getTokenStartCharacter(),
-        )
+          visitFunction(
+            _scanner.getTokenOffset(),
+            _scanner.getTokenLength(),
+            _scanner.getTokenStartLine(),
+            _scanner.getTokenStartCharacter(),
+          )
       : () => true;
   }
   function toNoArgVisitWithPath(visitFunction) {
     return visitFunction
       ? () =>
-        visitFunction(
-          _scanner.getTokenOffset(),
-          _scanner.getTokenLength(),
-          _scanner.getTokenStartLine(),
-          _scanner.getTokenStartCharacter(),
-          () => _jsonPath.slice(),
-        )
+          visitFunction(
+            _scanner.getTokenOffset(),
+            _scanner.getTokenLength(),
+            _scanner.getTokenStartLine(),
+            _scanner.getTokenStartCharacter(),
+            () => _jsonPath.slice(),
+          )
       : () => true;
   }
   function toOneArgVisit(visitFunction) {
     return visitFunction
       ? (arg) =>
-        visitFunction(
-          arg,
-          _scanner.getTokenOffset(),
-          _scanner.getTokenLength(),
-          _scanner.getTokenStartLine(),
-          _scanner.getTokenStartCharacter(),
-        )
+          visitFunction(
+            arg,
+            _scanner.getTokenOffset(),
+            _scanner.getTokenLength(),
+            _scanner.getTokenStartLine(),
+            _scanner.getTokenStartCharacter(),
+          )
       : () => true;
   }
   function toOneArgVisitWithPath(visitFunction) {
     return visitFunction
       ? (arg) =>
-        visitFunction(
-          arg,
-          _scanner.getTokenOffset(),
-          _scanner.getTokenLength(),
-          _scanner.getTokenStartLine(),
-          _scanner.getTokenStartCharacter(),
-          () => _jsonPath.slice(),
-        )
+          visitFunction(
+            arg,
+            _scanner.getTokenOffset(),
+            _scanner.getTokenLength(),
+            _scanner.getTokenStartLine(),
+            _scanner.getTokenStartCharacter(),
+            () => _jsonPath.slice(),
+          )
       : () => true;
   }
 
@@ -260,7 +264,11 @@ export function visit(text, visitor, options = { allowTrailingComma: false }) {
 
   function parseProperty() {
     if (_scanner.getToken() !== SyntaxKind.StringLiteral) {
-      handleError(ParseErrorCode.PropertyNameExpected, [], [SyntaxKind.CloseBraceToken, SyntaxKind.CommaToken]);
+      handleError(
+        ParseErrorCode.PropertyNameExpected,
+        [],
+        [SyntaxKind.CloseBraceToken, SyntaxKind.CommaToken],
+      );
       return false;
     }
     parseString(false);
@@ -269,10 +277,18 @@ export function visit(text, visitor, options = { allowTrailingComma: false }) {
       scanNext(); // consume colon
 
       if (!parseValue()) {
-        handleError(ParseErrorCode.ValueExpected, [], [SyntaxKind.CloseBraceToken, SyntaxKind.CommaToken]);
+        handleError(
+          ParseErrorCode.ValueExpected,
+          [],
+          [SyntaxKind.CloseBraceToken, SyntaxKind.CommaToken],
+        );
       }
     } else {
-      handleError(ParseErrorCode.ColonExpected, [], [SyntaxKind.CloseBraceToken, SyntaxKind.CommaToken]);
+      handleError(
+        ParseErrorCode.ColonExpected,
+        [],
+        [SyntaxKind.CloseBraceToken, SyntaxKind.CommaToken],
+      );
     }
     _jsonPath.pop(); // remove processed property name
     return true;
@@ -283,27 +299,41 @@ export function visit(text, visitor, options = { allowTrailingComma: false }) {
     scanNext(); // consume open brace
 
     let needsComma = false;
-    while (_scanner.getToken() !== SyntaxKind.CloseBraceToken && _scanner.getToken() !== SyntaxKind.EOF) {
+    while (
+      _scanner.getToken() !== SyntaxKind.CloseBraceToken &&
+      _scanner.getToken() !== SyntaxKind.EOF
+    ) {
       if (_scanner.getToken() === SyntaxKind.CommaToken) {
         if (!needsComma) {
           handleError(ParseErrorCode.ValueExpected, [], []);
         }
         onSeparator(",");
         scanNext(); // consume comma
-        if (_scanner.getToken() === SyntaxKind.CloseBraceToken && allowTrailingComma) {
+        if (
+          _scanner.getToken() === SyntaxKind.CloseBraceToken &&
+          allowTrailingComma
+        ) {
           break;
         }
       } else if (needsComma) {
         handleError(ParseErrorCode.CommaExpected, [], []);
       }
       if (!parseProperty()) {
-        handleError(ParseErrorCode.ValueExpected, [], [SyntaxKind.CloseBraceToken, SyntaxKind.CommaToken]);
+        handleError(
+          ParseErrorCode.ValueExpected,
+          [],
+          [SyntaxKind.CloseBraceToken, SyntaxKind.CommaToken],
+        );
       }
       needsComma = true;
     }
     onObjectEnd();
     if (_scanner.getToken() !== SyntaxKind.CloseBraceToken) {
-      handleError(ParseErrorCode.CloseBraceExpected, [SyntaxKind.CloseBraceToken], []);
+      handleError(
+        ParseErrorCode.CloseBraceExpected,
+        [SyntaxKind.CloseBraceToken],
+        [],
+      );
     } else {
       scanNext(); // consume close brace
     }
@@ -316,14 +346,20 @@ export function visit(text, visitor, options = { allowTrailingComma: false }) {
     let isFirstElement = true;
 
     let needsComma = false;
-    while (_scanner.getToken() !== SyntaxKind.CloseBracketToken && _scanner.getToken() !== SyntaxKind.EOF) {
+    while (
+      _scanner.getToken() !== SyntaxKind.CloseBracketToken &&
+      _scanner.getToken() !== SyntaxKind.EOF
+    ) {
       if (_scanner.getToken() === SyntaxKind.CommaToken) {
         if (!needsComma) {
           handleError(ParseErrorCode.ValueExpected, [], []);
         }
         onSeparator(",");
         scanNext(); // consume comma
-        if (_scanner.getToken() === SyntaxKind.CloseBracketToken && allowTrailingComma) {
+        if (
+          _scanner.getToken() === SyntaxKind.CloseBracketToken &&
+          allowTrailingComma
+        ) {
           break;
         }
       } else if (needsComma) {
@@ -336,7 +372,11 @@ export function visit(text, visitor, options = { allowTrailingComma: false }) {
         _jsonPath[_jsonPath.length - 1]++;
       }
       if (!parseValue()) {
-        handleError(ParseErrorCode.ValueExpected, [], [SyntaxKind.CloseBracketToken, SyntaxKind.CommaToken]);
+        handleError(
+          ParseErrorCode.ValueExpected,
+          [],
+          [SyntaxKind.CloseBracketToken, SyntaxKind.CommaToken],
+        );
       }
       needsComma = true;
     }
@@ -345,7 +385,11 @@ export function visit(text, visitor, options = { allowTrailingComma: false }) {
       _jsonPath.pop(); // remove array index
     }
     if (_scanner.getToken() !== SyntaxKind.CloseBracketToken) {
-      handleError(ParseErrorCode.CloseBracketExpected, [SyntaxKind.CloseBracketToken], []);
+      handleError(
+        ParseErrorCode.CloseBracketExpected,
+        [SyntaxKind.CloseBracketToken],
+        [],
+      );
     } else {
       scanNext(); // consume close bracket
     }
@@ -453,11 +497,15 @@ export function createScanner(text, ignoreTrivia = false) {
       }
     }
     let end = pos;
-    if (pos < text.length && (text.charCodeAt(pos) === CharacterCodes.E || text.charCodeAt(pos) === CharacterCodes.e)) {
+    if (
+      pos < text.length &&
+      (text.charCodeAt(pos) === CharacterCodes.E ||
+        text.charCodeAt(pos) === CharacterCodes.e)
+    ) {
       pos++;
       if (
-        pos < text.length && text.charCodeAt(pos) === CharacterCodes.plus
-        || text.charCodeAt(pos) === CharacterCodes.minus
+        (pos < text.length && text.charCodeAt(pos) === CharacterCodes.plus) ||
+        text.charCodeAt(pos) === CharacterCodes.minus
       ) {
         pos++;
       }
@@ -500,7 +548,7 @@ export function createScanner(text, ignoreTrivia = false) {
         const ch2 = text.charCodeAt(pos++);
         switch (ch2) {
           case CharacterCodes.doubleQuote:
-            result += "\"";
+            result += '"';
             break;
           case CharacterCodes.backslash:
             result += "\\";
@@ -563,7 +611,7 @@ export function createScanner(text, ignoreTrivia = false) {
     if (pos >= len) {
       // at the end
       tokenOffset = len;
-      return token = SyntaxKind.EOF;
+      return (token = SyntaxKind.EOF);
     }
 
     let code = text.charCodeAt(pos);
@@ -575,48 +623,51 @@ export function createScanner(text, ignoreTrivia = false) {
         code = text.charCodeAt(pos);
       } while (isWhiteSpace(code));
 
-      return token = SyntaxKind.Trivia;
+      return (token = SyntaxKind.Trivia);
     }
 
     // trivia: newlines
     if (isLineBreak(code)) {
       pos++;
       value += String.fromCharCode(code);
-      if (code === CharacterCodes.carriageReturn && text.charCodeAt(pos) === CharacterCodes.lineFeed) {
+      if (
+        code === CharacterCodes.carriageReturn &&
+        text.charCodeAt(pos) === CharacterCodes.lineFeed
+      ) {
         pos++;
         value += "\n";
       }
       lineNumber++;
       tokenLineStartOffset = pos;
-      return token = SyntaxKind.LineBreakTrivia;
+      return (token = SyntaxKind.LineBreakTrivia);
     }
 
     switch (code) {
       // tokens: []{}:,
       case CharacterCodes.openBrace:
         pos++;
-        return token = SyntaxKind.OpenBraceToken;
+        return (token = SyntaxKind.OpenBraceToken);
       case CharacterCodes.closeBrace:
         pos++;
-        return token = SyntaxKind.CloseBraceToken;
+        return (token = SyntaxKind.CloseBraceToken);
       case CharacterCodes.openBracket:
         pos++;
-        return token = SyntaxKind.OpenBracketToken;
+        return (token = SyntaxKind.OpenBracketToken);
       case CharacterCodes.closeBracket:
         pos++;
-        return token = SyntaxKind.CloseBracketToken;
+        return (token = SyntaxKind.CloseBracketToken);
       case CharacterCodes.colon:
         pos++;
-        return token = SyntaxKind.ColonToken;
+        return (token = SyntaxKind.ColonToken);
       case CharacterCodes.comma:
         pos++;
-        return token = SyntaxKind.CommaToken;
+        return (token = SyntaxKind.CommaToken);
 
       // strings
       case CharacterCodes.doubleQuote:
         pos++;
         value = scanString();
-        return token = SyntaxKind.StringLiteral;
+        return (token = SyntaxKind.StringLiteral);
 
       // comments
       case CharacterCodes.slash:
@@ -632,7 +683,7 @@ export function createScanner(text, ignoreTrivia = false) {
             pos++;
           }
           value = text.substring(start, pos);
-          return token = SyntaxKind.LineCommentTrivia;
+          return (token = SyntaxKind.LineCommentTrivia);
         }
 
         // Multi-line comment
@@ -644,7 +695,10 @@ export function createScanner(text, ignoreTrivia = false) {
           while (pos < safeLength) {
             const ch = text.charCodeAt(pos);
 
-            if (ch === CharacterCodes.asterisk && text.charCodeAt(pos + 1) === CharacterCodes.slash) {
+            if (
+              ch === CharacterCodes.asterisk &&
+              text.charCodeAt(pos + 1) === CharacterCodes.slash
+            ) {
               pos += 2;
               commentClosed = true;
               break;
@@ -653,7 +707,10 @@ export function createScanner(text, ignoreTrivia = false) {
             pos++;
 
             if (isLineBreak(ch)) {
-              if (ch === CharacterCodes.carriageReturn && text.charCodeAt(pos) === CharacterCodes.lineFeed) {
+              if (
+                ch === CharacterCodes.carriageReturn &&
+                text.charCodeAt(pos) === CharacterCodes.lineFeed
+              ) {
                 pos++;
               }
 
@@ -668,19 +725,19 @@ export function createScanner(text, ignoreTrivia = false) {
           }
 
           value = text.substring(start, pos);
-          return token = SyntaxKind.BlockCommentTrivia;
+          return (token = SyntaxKind.BlockCommentTrivia);
         }
         // just a single slash
         value += String.fromCharCode(code);
         pos++;
-        return token = SyntaxKind.Unknown;
+        return (token = SyntaxKind.Unknown);
 
       // numbers
       case CharacterCodes.minus:
         value += String.fromCharCode(code);
         pos++;
         if (pos === len || !isDigit(text.charCodeAt(pos))) {
-          return token = SyntaxKind.Unknown;
+          return (token = SyntaxKind.Unknown);
         }
       // found a minus, followed by a number so
       // we fall through to proceed with scanning
@@ -696,7 +753,7 @@ export function createScanner(text, ignoreTrivia = false) {
       case CharacterCodes._8:
       case CharacterCodes._9:
         value += scanNumber();
-        return token = SyntaxKind.NumericLiteral;
+        return (token = SyntaxKind.NumericLiteral);
       // literals and unknown symbols
       default:
         // is a literal? Read the full word.
@@ -709,18 +766,18 @@ export function createScanner(text, ignoreTrivia = false) {
           // keywords: true, false, null
           switch (value) {
             case "true":
-              return token = SyntaxKind.TrueKeyword;
+              return (token = SyntaxKind.TrueKeyword);
             case "false":
-              return token = SyntaxKind.FalseKeyword;
+              return (token = SyntaxKind.FalseKeyword);
             case "null":
-              return token = SyntaxKind.NullKeyword;
+              return (token = SyntaxKind.NullKeyword);
           }
-          return token = SyntaxKind.Unknown;
+          return (token = SyntaxKind.Unknown);
         }
         // some
         value += String.fromCharCode(code);
         pos++;
-        return token = SyntaxKind.Unknown;
+        return (token = SyntaxKind.Unknown);
     }
   }
 
@@ -746,7 +803,10 @@ export function createScanner(text, ignoreTrivia = false) {
     let result;
     do {
       result = scanNext();
-    } while (result >= SyntaxKind.LineCommentTrivia && result <= SyntaxKind.Trivia);
+    } while (
+      result >= SyntaxKind.LineCommentTrivia &&
+      result <= SyntaxKind.Trivia
+    );
     return result;
   }
 
@@ -777,8 +837,8 @@ function isDigit(ch) {
 }
 
 const CharacterCodes = {
-  lineFeed: 0x0A, // \n
-  carriageReturn: 0x0D, // \r
+  lineFeed: 0x0a, // \n
+  carriageReturn: 0x0d, // \r
 
   space: 0x0020, // " "
 
@@ -802,12 +862,12 @@ const CharacterCodes = {
   g: 0x67,
   h: 0x68,
   i: 0x69,
-  j: 0x6A,
-  k: 0x6B,
-  l: 0x6C,
-  m: 0x6D,
-  n: 0x6E,
-  o: 0x6F,
+  j: 0x6a,
+  k: 0x6b,
+  l: 0x6c,
+  m: 0x6d,
+  n: 0x6e,
+  o: 0x6f,
   p: 0x70,
   q: 0x71,
   r: 0x72,
@@ -818,7 +878,7 @@ const CharacterCodes = {
   w: 0x77,
   x: 0x78,
   y: 0x79,
-  z: 0x7A,
+  z: 0x7a,
 
   A: 0x41,
   B: 0x42,
@@ -829,12 +889,12 @@ const CharacterCodes = {
   G: 0x47,
   H: 0x48,
   I: 0x49,
-  J: 0x4A,
-  K: 0x4B,
-  L: 0x4C,
-  M: 0x4D,
-  N: 0x4E,
-  O: 0x4F,
+  J: 0x4a,
+  K: 0x4b,
+  L: 0x4c,
+  M: 0x4d,
+  N: 0x4e,
+  O: 0x4f,
   P: 0x50,
   Q: 0x51,
   R: 0x52,
@@ -847,20 +907,20 @@ const CharacterCodes = {
   Y: 0x59,
   Z: 0x5a,
 
-  asterisk: 0x2A, // *
-  backslash: 0x5C, // \
-  closeBrace: 0x7D, // }
-  closeBracket: 0x5D, // ]
-  colon: 0x3A, // :
-  comma: 0x2C, // ,
-  dot: 0x2E, // .
+  asterisk: 0x2a, // *
+  backslash: 0x5c, // \
+  closeBrace: 0x7d, // }
+  closeBracket: 0x5d, // ]
+  colon: 0x3a, // :
+  comma: 0x2c, // ,
+  dot: 0x2e, // .
   doubleQuote: 0x22, // "
-  minus: 0x2D, // -
-  openBrace: 0x7B, // {
-  openBracket: 0x5B, // [
-  plus: 0x2B, // +
-  slash: 0x2F, // /
+  minus: 0x2d, // -
+  openBrace: 0x7b, // {
+  openBracket: 0x5b, // [
+  plus: 0x2b, // +
+  slash: 0x2f, // /
 
-  formFeed: 0x0C, // \f
+  formFeed: 0x0c, // \f
   tab: 0x09, // \t
 };

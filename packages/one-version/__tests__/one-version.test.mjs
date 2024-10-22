@@ -12,7 +12,11 @@ describe("one-version unit tests", () => {
         logs.push(args.join(" "));
       },
     };
-    let { statusCode } = await start({ rootDirectory: process.cwd(), logger, args: ["help"] });
+    let { statusCode } = await start({
+      rootDirectory: process.cwd(),
+      logger,
+      args: ["help"],
+    });
 
     assert.equal(statusCode, 0);
 
@@ -26,7 +30,11 @@ describe("one-version unit tests", () => {
         logs.push(args.join(" "));
       },
     };
-    let { statusCode } = await start({ rootDirectory: process.cwd(), logger, args: [] });
+    let { statusCode } = await start({
+      rootDirectory: process.cwd(),
+      logger,
+      args: [],
+    });
 
     assert.equal(statusCode, 1);
 
@@ -35,50 +43,60 @@ describe("one-version unit tests", () => {
 
   describe("getUnpinnedDependencies", () => {
     test("returns empty array when no dependencies are found", () => {
-      const workspaceDependencies = [{
-        name: "testing",
-        dependencies: {},
-        devDependencies: {},
-        peerDependencies: {},
-      }];
-      const result = getUnpinnedDependencies({ workspaceDependencies, overrides: undefined });
+      const workspaceDependencies = [
+        {
+          name: "testing",
+          dependencies: {},
+          devDependencies: {},
+          peerDependencies: {},
+        },
+      ];
+      const result = getUnpinnedDependencies({
+        workspaceDependencies,
+        overrides: undefined,
+      });
 
       assert.deepEqual(result, {});
     });
 
     test("Covers the core edge cases", () => {
-      const workspaceDependencies = [{
-        name: "testing",
-        dependencies: {
-          foo: "^1.0.0",
+      const workspaceDependencies = [
+        {
+          name: "testing",
+          dependencies: {
+            foo: "^1.0.0",
+          },
+          devDependencies: {
+            bar: "2.0.x",
+            baz: "3.X",
+            react: "17.0.0 - 18.0.0",
+            "react-dom": "17.0.0 || 18.0.0",
+            "react-native": ">=0.64.0",
+            "react-native-web": "<0.17.0",
+            "one-version": "workspace:^*",
+            turbo: "workspace:~*",
+            next: "canary",
+            abc: "next",
+            def: "beta",
+            ghi: "alpha",
+            jkl: "rc",
+            mno: "dev",
+            // All below shouldn't show up!
+            hohoro: "workspace:*",
+            "react-router": "file:../react-router",
+            "left-pad": "git://github.com/jonschlinkert/left-pad.git#1.2.0",
+            "right-pad": "link:../right-pad",
+            "top-pad": "url:../top-pad",
+          },
+          peerDependencies: {
+            "peer-dep": "*",
+          },
         },
-        devDependencies: {
-          bar: "2.0.x",
-          baz: "3.X",
-          react: "17.0.0 - 18.0.0",
-          "react-dom": "17.0.0 || 18.0.0",
-          "react-native": ">=0.64.0",
-          "react-native-web": "<0.17.0",
-          "one-version": "workspace:^*",
-          turbo: "workspace:~*",
-          next: "canary",
-          abc: "next",
-          def: "beta",
-          ghi: "alpha",
-          jkl: "rc",
-          mno: "dev",
-          // All below shouldn't show up!
-          hohoro: "workspace:*",
-          "react-router": "file:../react-router",
-          "left-pad": "git://github.com/jonschlinkert/left-pad.git#1.2.0",
-          "right-pad": "link:../right-pad",
-          "top-pad": "url:../top-pad",
-        },
-        peerDependencies: {
-          "peer-dep": "*",
-        },
-      }];
-      const result = getUnpinnedDependencies({ workspaceDependencies, overrides: undefined });
+      ];
+      const result = getUnpinnedDependencies({
+        workspaceDependencies,
+        overrides: undefined,
+      });
 
       // peer-dep is omitted because it's a peer dependency
       assert.deepEqual(result, {
@@ -103,16 +121,18 @@ describe("one-version unit tests", () => {
     });
 
     test("Allows overriding dependencies", () => {
-      const workspaceDependencies = [{
-        name: "testing",
-        dependencies: {
-          foo: "^1.0.0",
+      const workspaceDependencies = [
+        {
+          name: "testing",
+          dependencies: {
+            foo: "^1.0.0",
+          },
+          devDependencies: {},
+          peerDependencies: {
+            next: "canary",
+          },
         },
-        devDependencies: {},
-        peerDependencies: {
-          next: "canary",
-        },
-      }];
+      ];
       const result = getUnpinnedDependencies({
         workspaceDependencies,
         overrides: {
@@ -124,9 +144,7 @@ describe("one-version unit tests", () => {
 
       // Next not included because it's overridden
       assert.deepEqual(result, {
-        testing: [
-          "foo@^1.0.0",
-        ],
+        testing: ["foo@^1.0.0"],
       });
     });
   });
@@ -148,7 +166,11 @@ describe("one-version integration tests", () => {
         errors.push(args.join(" "));
       },
     };
-    let { statusCode } = await start({ rootDirectory: targetDir, logger, args: ["check"] });
+    let { statusCode } = await start({
+      rootDirectory: targetDir,
+      logger,
+      args: ["check"],
+    });
 
     // should fail - mismatch of typescript dependencies
     assert.equal(statusCode, 1);
@@ -169,7 +191,11 @@ describe("one-version integration tests", () => {
         errors.push(args.join(" "));
       },
     };
-    let { statusCode } = await start({ rootDirectory: targetDir, logger, args: ["check"] });
+    let { statusCode } = await start({
+      rootDirectory: targetDir,
+      logger,
+      args: ["check"],
+    });
 
     // should fail - mismatch of typescript dependencies
     assert.equal(statusCode, 1);
@@ -179,7 +205,12 @@ describe("one-version integration tests", () => {
   });
 
   test("yarn-classic", async () => {
-    const targetDir = path.join(__dirname, "..", "__fixtures__", "yarn-classic");
+    const targetDir = path.join(
+      __dirname,
+      "..",
+      "__fixtures__",
+      "yarn-classic",
+    );
     let logs = [];
     let errors = [];
     let logger = {
@@ -190,7 +221,11 @@ describe("one-version integration tests", () => {
         errors.push(args.join(" "));
       },
     };
-    let { statusCode } = await start({ rootDirectory: targetDir, logger, args: ["check"] });
+    let { statusCode } = await start({
+      rootDirectory: targetDir,
+      logger,
+      args: ["check"],
+    });
 
     // should fail - mismatch of typescript dependencies
     assert.equal(statusCode, 1);
@@ -211,7 +246,11 @@ describe("one-version integration tests", () => {
         errors.push(args.join(" "));
       },
     };
-    let { statusCode } = await start({ rootDirectory: targetDir, logger, args: ["check"] });
+    let { statusCode } = await start({
+      rootDirectory: targetDir,
+      logger,
+      args: ["check"],
+    });
 
     // should fail - mismatch of typescript dependencies
     assert.equal(statusCode, 1);
@@ -232,7 +271,11 @@ describe("one-version integration tests", () => {
         errors.push(args.join(" "));
       },
     };
-    let { statusCode } = await start({ rootDirectory: targetDir, logger, args: ["check"] });
+    let { statusCode } = await start({
+      rootDirectory: targetDir,
+      logger,
+      args: ["check"],
+    });
 
     // should fail - mismatch of typescript dependencies
     assert.equal(statusCode, 1);
@@ -253,7 +296,11 @@ describe("one-version integration tests", () => {
         errors.push(args.join(" "));
       },
     };
-    let { statusCode } = await start({ rootDirectory: targetDir, logger, args: ["check"] });
+    let { statusCode } = await start({
+      rootDirectory: targetDir,
+      logger,
+      args: ["check"],
+    });
 
     // should fail - mismatch of typescript dependencies
     assert.equal(statusCode, 1);
@@ -261,7 +308,12 @@ describe("one-version integration tests", () => {
   });
 
   test("bun - configured and allowed", async () => {
-    const targetDir = path.join(__dirname, "..", "__fixtures__", "bun-configured");
+    const targetDir = path.join(
+      __dirname,
+      "..",
+      "__fixtures__",
+      "bun-configured",
+    );
     let logs = [];
     let errors = [];
     let logger = {
@@ -272,7 +324,11 @@ describe("one-version integration tests", () => {
         errors.push(args.join(" "));
       },
     };
-    let { statusCode } = await start({ rootDirectory: targetDir, logger, args: ["check"] });
+    let { statusCode } = await start({
+      rootDirectory: targetDir,
+      logger,
+      args: ["check"],
+    });
 
     // should pass - configured overrides for typescript dependency
     assert.equal(statusCode, 0);
@@ -283,7 +339,12 @@ describe("one-version integration tests", () => {
   });
 
   test("bun - configured and pinned versions", async () => {
-    const targetDir = path.join(__dirname, "..", "__fixtures__", "bun-configured-pinned");
+    const targetDir = path.join(
+      __dirname,
+      "..",
+      "__fixtures__",
+      "bun-configured-pinned",
+    );
     let logs = [];
     let errors = [];
     let logger = {
@@ -294,7 +355,11 @@ describe("one-version integration tests", () => {
         errors.push(args.join(" "));
       },
     };
-    let { statusCode } = await start({ rootDirectory: targetDir, logger, args: ["check"] });
+    let { statusCode } = await start({
+      rootDirectory: targetDir,
+      logger,
+      args: ["check"],
+    });
 
     // should fail because of loose deps
     assert.equal(statusCode, 1);

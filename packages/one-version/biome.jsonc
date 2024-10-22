@@ -1,17 +1,11 @@
 {
-	"$schema": "https://biomejs.dev/schemas/1.6.3/schema.json",
-	"organizeImports": {
-		"enabled": true
-	},
-	"linter": {
-		"ignore": ["jsonc-parser.mjs"],
-		"enabled": true,
-		"rules": {
-			"recommended": true,
-			"style": {
-				"useConst": "off",
-				"noUnusedTemplateLiteral": "off"
-			}
-		}
-	}
+  "extends": ["../../biome.jsonc"],
+  "overrides": [
+    {
+      "include": ["./utils/jsonc-parser.mjs"],
+      "linter": {
+        "enabled": false
+      }
+    }
+  ]
 }

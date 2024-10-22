@@ -6,10 +6,10 @@
     "dev": "next dev --turbo",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "biome lint"
   },
   "dependencies": {
-    "next": "14.3.0-canary.61"
+    "next": "15.0.1-canary.0"
   },
   "devDependencies": {
     "@types/node": "latest",

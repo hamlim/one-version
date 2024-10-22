@@ -32,9 +32,16 @@ function loadConfig({ rootDirectory }) {
   try {
     // prefer jsonc first, then fallback to .json
     if (existsSync(pathJoin(rootDirectory, "one-version.config.jsonc"))) {
-      return parse(readFileSync(pathJoin(rootDirectory, "one-version.config.jsonc"), "utf8"));
+      return parse(
+        readFileSync(
+          pathJoin(rootDirectory, "one-version.config.jsonc"),
+          "utf8",
+        ),
+      );
     }
-    return parse(readFileSync(pathJoin(rootDirectory, "one-version.config.json"), "utf8"));
+    return parse(
+      readFileSync(pathJoin(rootDirectory, "one-version.config.json"), "utf8"),
+    );
   } catch (error) {
     debug("Error loading config", error);
     return {};
@@ -79,7 +86,10 @@ function inferPackageManager({ rootDirectory }) {
 function getWorkspaces({ rootDirectory, packageManager }) {
   switch (packageManager) {
     case "pnpm": {
-      let stdout = exec("pnpm list -r --json --depth -1", { cwd: rootDirectory, encoding: "utf8" }).trim();
+      let stdout = exec("pnpm list -r --json --depth -1", {
+        cwd: rootDirectory,
+        encoding: "utf8",
+      }).trim();
       /**
        * @type {Array<{
        *   name: string;
@@ -113,7 +123,9 @@ function getWorkspaces({ rootDirectory, packageManager }) {
       let workspaces = JSON.parse(output.data);
       // Yarn Classic does not include the root package.
       let rootPackageJSONPath = path.join(rootDirectory, "package.json");
-      let rootPackageJSON = JSON.parse(readFileSync(rootPackageJSONPath, { encoding: "utf8" }));
+      let rootPackageJSON = JSON.parse(
+        readFileSync(rootPackageJSONPath, { encoding: "utf8" }),
+      );
 
       return [
         {
@@ -153,7 +165,10 @@ function getWorkspaces({ rootDirectory, packageManager }) {
       return [];
     }
     case "npm": {
-      let rootPackageJSON = readFileSync(path.join(rootDirectory, "package.json"), { encoding: "utf8" });
+      let rootPackageJSON = readFileSync(
+        path.join(rootDirectory, "package.json"),
+        { encoding: "utf8" },
+      );
       rootPackageJSON = JSON.parse(rootPackageJSON);
       let workspaceGlobs = rootPackageJSON.workspaces || [];
 
@@ -174,7 +189,10 @@ function getWorkspaces({ rootDirectory, packageManager }) {
       return workspaces;
     }
     case "bun": {
-      let rootPackageJSON = readFileSync(path.join(rootDirectory, "package.json"), { encoding: "utf8" });
+      let rootPackageJSON = readFileSync(
+        path.join(rootDirectory, "package.json"),
+        { encoding: "utf8" },
+      );
       rootPackageJSON = JSON.parse(rootPackageJSON);
       let workspaceGlobs = rootPackageJSON.workspaces || [];
 
@@ -214,7 +232,8 @@ function getDependencies({ path: workspacePath }) {
   let packageContents = readFileSync(path.join(workspacePath, "package.json"), {
     encoding: "utf8",
   });
-  let { name, peerDependencies, devDependencies, dependencies, resolutions } = JSON.parse(packageContents);
+  let { name, peerDependencies, devDependencies, dependencies, resolutions } =
+    JSON.parse(packageContents);
   return { name, peerDependencies, devDependencies, dependencies, resolutions };
 }
 
@@ -249,51 +268,54 @@ function getDuplicateDependencies({ workspaceDependencies, overrides }) {
    * }
    * @type {Record<string, Record<string, Record<'direct' | 'peer' | 'dev', Array<string>>>>}
    */
-  let dependenciesByNameAndVersion = workspaceDependencies.reduce((
-    acc,
-    { name: consumerName, dependencies, peerDependencies, devDependencies },
-  ) => {
-    if (dependencies) {
-      for (let [packageName, version] of Object.entries(dependencies)) {
-        let seenConsumers = acc[packageName]?.[version]?.direct || [];
-        let versionConsumers = seenConsumers.concat(consumerName);
-        acc[packageName] = {
-          ...acc[packageName],
-          [version]: {
-            ...acc[packageName]?.[version],
-            direct: versionConsumers,
-          },
-        };
+  let dependenciesByNameAndVersion = workspaceDependencies.reduce(
+    (
+      acc,
+      { name: consumerName, dependencies, peerDependencies, devDependencies },
+    ) => {
+      if (dependencies) {
+        for (let [packageName, version] of Object.entries(dependencies)) {
+          let seenConsumers = acc[packageName]?.[version]?.direct || [];
+          let versionConsumers = seenConsumers.concat(consumerName);
+          acc[packageName] = {
+            ...acc[packageName],
+            [version]: {
+              ...acc[packageName]?.[version],
+              direct: versionConsumers,
+            },
+          };
+        }
       }
-    }
-    if (peerDependencies) {
-      for (let [packageName, version] of Object.entries(peerDependencies)) {
-        let seenConsumers = acc[packageName]?.[version]?.peer || [];
-        let versionConsumers = seenConsumers.concat(consumerName);
-        acc[packageName] = {
-          ...acc[packageName],
-          [version]: {
-            ...acc[packageName]?.[version],
-            peer: versionConsumers,
-          },
-        };
+      if (peerDependencies) {
+        for (let [packageName, version] of Object.entries(peerDependencies)) {
+          let seenConsumers = acc[packageName]?.[version]?.peer || [];
+          let versionConsumers = seenConsumers.concat(consumerName);
+          acc[packageName] = {
+            ...acc[packageName],
+            [version]: {
+              ...acc[packageName]?.[version],
+              peer: versionConsumers,
+            },
+          };
+        }
       }
-    }
-    if (devDependencies) {
-      for (let [packageName, version] of Object.entries(devDependencies)) {
-        let seenConsumers = acc[packageName]?.[version]?.dev || [];
-        let versionConsumers = seenConsumers.concat(consumerName);
-        acc[packageName] = {
-          ...acc[packageName],
-          [version]: {
-            ...acc[packageName]?.[version],
-            dev: versionConsumers,
-          },
-        };
+      if (devDependencies) {
+        for (let [packageName, version] of Object.entries(devDependencies)) {
+          let seenConsumers = acc[packageName]?.[version]?.dev || [];
+          let versionConsumers = seenConsumers.concat(consumerName);
+          acc[packageName] = {
+            ...acc[packageName],
+            [version]: {
+              ...acc[packageName]?.[version],
+              dev: versionConsumers,
+            },
+          };
+        }
       }
-    }
-    return acc;
-  }, {});
+      return acc;
+    },
+    {},
+  );
 
   /**
    * Finds dependencies with multiple versions (excluding overrides)
@@ -310,7 +332,8 @@ function getDuplicateDependencies({ workspaceDependencies, overrides }) {
             let filteredPackages = {};
             let notOverridden = (packageName) =>
               // If it's not a direct match on the packageName (workspaceName) and if it's not a wildcard match
-              !packageOverrides[version]?.includes(packageName) && !packageOverrides[version]?.includes("*");
+              !packageOverrides[version]?.includes(packageName) &&
+              !packageOverrides[version]?.includes("*");
             if (direct) {
               let directDependencies = direct.filter(notOverridden);
               if (directDependencies.length > 0) {
@@ -375,7 +398,9 @@ function prettify(packages) {
 
       const versionsStr = Object.entries(versions)
         .map(([version, depTypes]) => {
-          const depTypeStrings = Object.entries(depTypes).map(([type, names]) => getTypeString({ type, names }));
+          const depTypeStrings = Object.entries(depTypes).map(([type, names]) =>
+            getTypeString({ type, names }),
+          );
 
           return getVersionString(version, depTypeStrings);
         })
@@ -399,53 +424,58 @@ function prettify(packages) {
 export function getUnpinnedDependencies({ workspaceDependencies, overrides }) {
   let unpinnedDependencies = {};
   // Notably - omit peerDeps since those can be semver ranges
-  for (let { name: workspaceName, dependencies, devDependencies } of workspaceDependencies) {
+  for (let {
+    name: workspaceName,
+    dependencies,
+    devDependencies,
+  } of workspaceDependencies) {
     let allDependencies = { ...dependencies, ...devDependencies };
     for (let [packageName, version] of Object.entries(allDependencies)) {
       // Let `file:`, `url:`, `git:`, `link:`, and `workspace:*` dependencies pass currently
       if (
-        version.startsWith("file:")
-        || version.startsWith("url:")
-        || version.startsWith("git:")
-        || version.startsWith("link:")
-        || version === "workspace:*"
+        version.startsWith("file:") ||
+        version.startsWith("url:") ||
+        version.startsWith("git:") ||
+        version.startsWith("link:") ||
+        version === "workspace:*"
       ) {
         continue;
       }
       if (
-        version.startsWith("^")
-        || version.startsWith("~")
+        version.startsWith("^") ||
+        version.startsWith("~") ||
         // any version
-        || version.includes("*")
+        version.includes("*") ||
         // range versions
-        || version.includes(".x")
-        || version.includes(".X")
-        || version.includes(" - ")
-        || version.includes(" || ")
+        version.includes(".x") ||
+        version.includes(".X") ||
+        version.includes(" - ") ||
+        version.includes(" || ") ||
         // Greater Than, Less Than
-        || version.includes(">")
-        || version.includes("<")
+        version.includes(">") ||
+        version.includes("<") ||
         // Keywords:
-        || version === "latest"
-        || version === "canary"
-        || version === "next"
-        || version === "beta"
-        || version === "alpha"
-        || version === "rc"
-        || version === "dev"
+        version === "latest" ||
+        version === "canary" ||
+        version === "next" ||
+        version === "beta" ||
+        version === "alpha" ||
+        version === "rc" ||
+        version === "dev" ||
         // workspace custom semver range deps
-        || version.startsWith("workspace:^")
-        || version.startsWith("workspace:~")
+        version.startsWith("workspace:^") ||
+        version.startsWith("workspace:~")
       ) {
         if (
           // If we've overridden this specific package@version for this specific workspace
-          overrides?.[packageName]?.[version]?.includes(workspaceName)
+          overrides?.[packageName]?.[version]?.includes(workspaceName) ||
           // or if we've overridden this specific package@version for any workspace
-          || overrides?.[packageName]?.[version]?.includes("*")
+          overrides?.[packageName]?.[version]?.includes("*")
         ) {
           continue;
         }
-        unpinnedDependencies[workspaceName] = unpinnedDependencies[workspaceName] || [];
+        unpinnedDependencies[workspaceName] =
+          unpinnedDependencies[workspaceName] || [];
         unpinnedDependencies[workspaceName].push(`${packageName}@${version}`);
       }
     }
@@ -479,7 +509,9 @@ export async function start({ rootDirectory, logger, args }) {
       if (!initialConfig.packageManager) {
         let inferredPackageManager = inferPackageManager({ rootDirectory });
         if (typeof inferredPackageManager !== "string") {
-          logger.error("Could not infer package manager! Please specify one in the config file.");
+          logger.error(
+            "Could not infer package manager! Please specify one in the config file.",
+          );
           return Promise.resolve({
             statusCode: 1,
           });
@@ -490,18 +522,29 @@ export async function start({ rootDirectory, logger, args }) {
         initialConfig.versionStrategy = "loose";
       }
       debug("Initial config", JSON.stringify(initialConfig, null, 2));
-      let workspaces = getWorkspaces({ rootDirectory, packageManager: initialConfig.packageManager });
+      let workspaces = getWorkspaces({
+        rootDirectory,
+        packageManager: initialConfig.packageManager,
+      });
       debug("Workspaces", JSON.stringify(workspaces, null, 2));
 
-      let workspaceDependencies = workspaces.map(({ path }) => getDependencies({ path }));
-      debug("Workspaces Dependencies", JSON.stringify(workspaceDependencies, null, 2));
+      let workspaceDependencies = workspaces.map(({ path }) =>
+        getDependencies({ path }),
+      );
+      debug(
+        "Workspaces Dependencies",
+        JSON.stringify(workspaceDependencies, null, 2),
+      );
 
       // Check for duplicate and mismatched versions of dependencies
       let duplicateDependencies = getDuplicateDependencies({
         workspaceDependencies,
         overrides: initialConfig.overrides,
       });
-      debug("Duplicate dependencies", JSON.stringify(duplicateDependencies, null, 2));
+      debug(
+        "Duplicate dependencies",
+        JSON.stringify(duplicateDependencies, null, 2),
+      );
 
       let pendingStatusCode = 0;
       let status = "✅";
@@ -524,15 +567,20 @@ export async function start({ rootDirectory, logger, args }) {
           workspaceDependencies,
           overrides: initialConfig.overrides,
         });
-        debug("Unpinned dependencies", JSON.stringify(unpinnedDependencies, null, 2));
+        debug(
+          "Unpinned dependencies",
+          JSON.stringify(unpinnedDependencies, null, 2),
+        );
 
         if (Object.keys(unpinnedDependencies).length > 0) {
           status = "🚫";
           logger.log(
             "🚫 One Version Rule Failure - found unpinned dependencies (with versionStrategy: 'pin'):\n",
-            Object.entries(unpinnedDependencies).map(([workspaceName, deps]) => {
-              return `${workspaceName}:\n- ${deps.join("\n -")}`;
-            }).join("\n\n"),
+            Object.entries(unpinnedDependencies)
+              .map(([workspaceName, deps]) => {
+                return `${workspaceName}:\n- ${deps.join("\n -")}`;
+              })
+              .join("\n\n"),
           );
           pendingStatusCode = 1;
         }
@@ -549,7 +597,9 @@ export async function start({ rootDirectory, logger, args }) {
       });
     }
     case "help": {
-      logger.log(`one-version - a strict dependency conformance tool for (mono)repos!`);
+      logger.log(
+        `one-version - a strict dependency conformance tool for (mono)repos!`,
+      );
       for (let log of usageLogs) {
         logger.log(log);
       }

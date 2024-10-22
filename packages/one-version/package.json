@@ -1,37 +1,30 @@
 {
-	"name": "one-version",
-	"version": "0.2.0",
-	"homepage": "https://one-version.vercel.app/",
-	"description": "A strict dependency conformance tool for (mono)repos!",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/hamlim/one-version",
-		"directory": "packages/one-version"
-	},
-	"license": "MIT",
-	"bin": {
-		"one-version": "./bin/index.mjs"
-	},
-	"files": [
-		"bin",
-		"one-version.mjs",
-		"utils",
-		"README.md",
-		"CHANGELOG.md"
-	],
-	"type": "module",
-	"devDependencies": {
-		"@biomejs/biome": "1.6.3",
-		"typescript": "5.4.5"
-	},
-	"dependencies": {
-		"fast-glob": "3.3.2"
-	},
-	"scripts": {
-		"type-check": "tsc -p ./tsconfig.json",
-		"lint": "biome lint ./",
-		"test": "node --test",
-		"prepub": "bun run type-check && bun run lint && bun run test",
-		"pub": "npm publish --access public"
-	}
+  "name": "one-version",
+  "version": "0.2.0",
+  "homepage": "https://one-version.vercel.app/",
+  "description": "A strict dependency conformance tool for (mono)repos!",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hamlim/one-version",
+    "directory": "packages/one-version"
+  },
+  "license": "MIT",
+  "bin": {
+    "one-version": "./bin/index.mjs"
+  },
+  "files": ["bin", "one-version.mjs", "utils", "README.md", "CHANGELOG.md"],
+  "type": "module",
+  "devDependencies": {
+    "typescript": "5.4.5"
+  },
+  "dependencies": {
+    "fast-glob": "3.3.2"
+  },
+  "scripts": {
+    "type-check": "tsc -p ./tsconfig.json",
+    "lint": "biome lint ./",
+    "test": "node --test",
+    "prepub": "bun run type-check && bun run lint && bun run test",
+    "pub": "npm publish --access public"
+  }
 }

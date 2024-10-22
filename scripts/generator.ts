@@ -42,7 +42,9 @@ if (!type) {
 }
 
 if (type !== "package" && type !== "app") {
-  throw new Error(`Invalid type: ${type}, only "package" and "app" are allowed`);
+  throw new Error(
+    `Invalid type: ${type}, only "package" and "app" are allowed`,
+  );
 }
 
 if (type === "package") {

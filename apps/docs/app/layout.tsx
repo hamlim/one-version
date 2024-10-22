@@ -33,6 +33,7 @@ export default function RootLayout({
       <head>
         <script
           suppressHydrationWarning
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
           dangerouslySetInnerHTML={{
             __html: `(${themeCheck.toString()})()`,
           }}

@@ -1,7 +1,15 @@
 import { Code } from "bright";
 import { StarIcon } from "lucide-react";
 import type { Metadata } from "next";
-import { Blockquote, H1, H2, InlineCode, Link, P, UnorderedList } from "~/components/typography";
+import {
+  Blockquote,
+  H1,
+  H2,
+  InlineCode,
+  Link,
+  P,
+  UnorderedList,
+} from "~/components/typography";
 import { Button } from "~/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 
@@ -33,12 +41,14 @@ export default function Home() {
       <header className={sectionClasses}>
         <H1>One Version</H1>
         <P>
-          One Version is a strict dependency conformance tool for monorepos, managing dependencies across repos has
-          never been easier!
+          One Version is a strict dependency conformance tool for monorepos,
+          managing dependencies across repos has never been easier!
         </P>
         <P>
-          This tool ensures that all workspaces in your monorepo are using the same version of a dependency, and also an
-          (opt-in) strict versioning strategy to ensure that all dependencies are pinned to an exact version.
+          This tool ensures that all workspaces in your monorepo are using the
+          same version of a dependency, and also an (opt-in) strict versioning
+          strategy to ensure that all dependencies are pinned to an exact
+          version.
         </P>
 
         <div className="pt-10 flex row justify-evenly items-center">
@@ -55,7 +65,8 @@ export default function Home() {
       <section id="installation" className={sectionClasses}>
         <H2>Installation</H2>
         <P>
-          Install <InlineCode>one-version</InlineCode> via your favorite package manager:
+          Install <InlineCode>one-version</InlineCode> via your favorite package
+          manager:
         </P>
         <div className="mt-6">
           <Tabs defaultValue="bun">
@@ -83,15 +94,17 @@ export default function Home() {
         </div>
         <Blockquote>
           <P>
-            Notably! <InlineCode>one-version</InlineCode> should be installed at the root of your monorepo.
+            Notably! <InlineCode>one-version</InlineCode> should be installed at
+            the root of your monorepo.
           </P>
         </Blockquote>
       </section>
       <section className={sectionClasses}>
         <H2 className="mt-4">Usage:</H2>
         <P>
-          Once you&apos;ve installed <InlineCode>one-version</InlineCode>, you can add a{" "}
-          <InlineCode>one-version:check</InlineCode> script in your root <InlineCode>package.json</InlineCode>:
+          Once you&apos;ve installed <InlineCode>one-version</InlineCode>, you
+          can add a <InlineCode>one-version:check</InlineCode> script in your
+          root <InlineCode>package.json</InlineCode>:
         </P>
         <Code lang="json">
           {`{
@@ -101,19 +114,22 @@ export default function Home() {
 }`}
         </Code>
         <P>
-          You can now run <InlineCode>bun run one-version:check</InlineCode>{" "}
-          (or use whatever package manager you have setup) to check for version conformance!
+          You can now run <InlineCode>bun run one-version:check</InlineCode> (or
+          use whatever package manager you have setup) to check for version
+          conformance!
         </P>
       </section>
       <section className={sectionClasses}>
         <H2>Configuration:</H2>
         <P>
-          <InlineCode>one-version</InlineCode>{" "}
-          can work out of the box without any configuration at all, however if you&apos;d like to allow specific
-          workspaces to use different versions of a dependency, you&apos;ll need to add a configuration file.
+          <InlineCode>one-version</InlineCode> can work out of the box without
+          any configuration at all, however if you&apos;d like to allow specific
+          workspaces to use different versions of a dependency, you&apos;ll need
+          to add a configuration file.
         </P>
         <P>
-          <InlineCode>one-version</InlineCode> currently supports the following package managers:
+          <InlineCode>one-version</InlineCode> currently supports the following
+          package managers:
         </P>
         <UnorderedList>
           <li>
@@ -132,13 +148,15 @@ export default function Home() {
             <InlineCode>yarn-berry</InlineCode> - Yarn version 2.x, 3.x, 4.x
           </li>
           <li>
-            <InlineCode>deno</InlineCode> - When using <InlineCode>package.json</InlineCode>
+            <InlineCode>deno</InlineCode> - When using{" "}
+            <InlineCode>package.json</InlineCode>
           </li>
         </UnorderedList>
         <P>
           You can configure <InlineCode>one-version</InlineCode> via either a{" "}
-          <InlineCode>one-version.config.jsonc</InlineCode> or <InlineCode>one-version.config.json</InlineCode>{" "}
-          file. An example configuration is provided below:
+          <InlineCode>one-version.config.jsonc</InlineCode> or{" "}
+          <InlineCode>one-version.config.json</InlineCode> file. An example
+          configuration is provided below:
         </P>
 
         <Code lang="json">
@@ -172,16 +190,18 @@ export default function Home() {
           package which I had contributed to while at Wayfair.
         </P>
         <P>
-          That package still works fine, but hasn&apos;t been maintained in some time - and also doesn&apos;t support
-          either <InlineCode>bun</InlineCode> or <InlineCode>npm</InlineCode>.
+          That package still works fine, but hasn&apos;t been maintained in some
+          time - and also doesn&apos;t support either{" "}
+          <InlineCode>bun</InlineCode> or <InlineCode>npm</InlineCode>.
         </P>
         <P>
-          Both this package and the original implement a version of Google&apos;s{" "}
-          <InlineCode>One-Version Rule</InlineCode>:
+          Both this package and the original implement a version of
+          Google&apos;s <InlineCode>One-Version Rule</InlineCode>:
         </P>
         <Blockquote>
           <P>
-            For every dependency in [a] repository, there must be only one version of that dependency to choose
+            For every dependency in [a] repository, there must be only one
+            version of that dependency to choose
             <sup>
               <Link href="#fn-1">1</Link>
             </sup>
@@ -198,15 +218,16 @@ export default function Home() {
       <footer className={sectionClasses}>
         <P>
           The source code for the library is available on{" "}
-          <Link href="https://github.com/hamlim/one-version">GitHub</Link>. If you run into any bugs, please report them
-          via{" "}
+          <Link href="https://github.com/hamlim/one-version">GitHub</Link>. If
+          you run into any bugs, please report them via{" "}
           <Link href="https://github.com/hamlim/one-version/issues/new">
             issues
           </Link>
           .
         </P>
         <P>
-          If you&apos;d like to discuss changes to the project, feel free to start a{" "}
+          If you&apos;d like to discuss changes to the project, feel free to
+          start a{" "}
           <Link href="https://github.com/hamlim/one-version/discussions/new/choose">
             discussion
           </Link>
