@@ -556,9 +556,14 @@ export async function start({ rootDirectory, logger, args }) {
       if (duplicateDependencies.length > 0) {
         status = "🚫";
         logger.log(
-          "You shall not pass!\n",
-          "🚫 One Version Rule Failure - found multiple versions of the following dependencies:\n",
-          prettify(duplicateDependencies),
+          [
+            "You shall not pass!",
+            "🚫 One Version Rule Failure",
+            "",
+            "Found multiple versions of the following dependencies:",
+            "",
+            prettify(duplicateDependencies),
+          ].join("\n"),
         );
 
         pendingStatusCode = 1;
@@ -579,12 +584,21 @@ export async function start({ rootDirectory, logger, args }) {
         if (Object.keys(unpinnedDependencies).length > 0) {
           status = "🚫";
           logger.log(
-            "🚫 One Version Rule Failure - found unpinned dependencies (with versionStrategy: 'pin'):\n",
-            Object.entries(unpinnedDependencies)
-              .map(([workspaceName, deps]) => {
-                return `${workspaceName}:\n- ${deps.join("\n -")}`;
-              })
-              .join("\n\n"),
+            [
+              // if we already logged a failure, don't log the header again
+              ...(pendingStatusCode === 0
+                ? ["You shall not pass!", "🚫 One Version Rule Failure"]
+                : ["", ""]),
+              "Found unpinned dependencies (with versionStrategy: 'pin'):",
+              "",
+              Object.entries(unpinnedDependencies)
+                .map(([workspaceName, deps]) => {
+                  return `${workspaceName}:\n${deps
+                    .map((dep) => dep.padStart(dep.length + SINGLE_INDENT))
+                    .join("\n")}`;
+                })
+                .join("\n\n"),
+            ].join("\n"),
           );
           pendingStatusCode = 1;
         }
@@ -592,8 +606,10 @@ export async function start({ rootDirectory, logger, args }) {
 
       if (status === "✅") {
         logger.log(
-          "My preciousss\n",
-          "✨ One Version Rule Success - found no version conflicts!",
+          [
+            "My preciousss",
+            "✨ One Version Rule Success - found no version conflicts!",
+          ].join("\n"),
         );
       }
       return Promise.resolve({

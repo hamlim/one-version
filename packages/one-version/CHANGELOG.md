@@ -1,5 +1,9 @@
 ### Unreleased:
 
+### [0.2.2] - April 8th, 2024
+
+Improve log line output/formatting
+
 ### [0.2.1] - April 8th, 2024
 
 Update packageManager inference for modern versions of bun using text-based lockfile format
