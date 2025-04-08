@@ -1,5 +1,9 @@
 ### Unreleased:
 
+### [0.2.1] - April 8th, 2024
+
+Update packageManager inference for modern versions of bun using text-based lockfile format
+
 ### [0.2.0] - May 17th, 2024
 
 Added support for pinned version strategy checking.

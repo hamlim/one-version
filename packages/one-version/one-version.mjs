@@ -1,7 +1,7 @@
-import fg from "fast-glob";
 import { execSync as exec } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import path, { join as pathJoin } from "node:path";
+import fg from "fast-glob";
 
 import { createDebug } from "./utils/create-debug.mjs";
 import { parse } from "./utils/jsonc-parser.mjs";
@@ -67,7 +67,11 @@ function inferPackageManager({ rootDirectory }) {
   if (existsSync(pathJoin(rootDirectory, "package-lock.json"))) {
     return "npm";
   }
-  if (existsSync(pathJoin(rootDirectory, "bun.lockb"))) {
+  if (
+    existsSync(pathJoin(rootDirectory, "bun.lockb")) ||
+    // modern versions of bun can use the text-based lockfile format
+    existsSync(pathJoin(rootDirectory, "bun.lock"))
+  ) {
     return "bun";
   }
 }
