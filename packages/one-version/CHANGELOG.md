@@ -1,5 +1,11 @@
 ### Unreleased:
 
+### [0.3.0] - May 27th, 2025
+
+**No breaking Changes**
+
+This change adds support for "single package repos" (e.g. repos that don't use workspaces).
+
 ### [0.2.2] - April 8th, 2024
 
 Improve log line output/formatting

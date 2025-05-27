@@ -6,7 +6,7 @@
 
 ## Getting Started:
 
-Install `one-version` from the root of your repo (even for monorepos!):
+Install `one-version` from the root of your repo:
 
 ```bash
 bun add one-version

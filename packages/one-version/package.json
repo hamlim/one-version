@@ -1,6 +1,6 @@
 {
   "name": "one-version",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "homepage": "https://one-version.vercel.app/",
   "description": "A strict dependency conformance tool for (mono)repos!",
   "repository": {

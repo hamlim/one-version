@@ -90,81 +90,106 @@ function inferPackageManager({ rootDirectory }) {
 function getWorkspaces({ rootDirectory, packageManager }) {
   switch (packageManager) {
     case "pnpm": {
-      let stdout = exec("pnpm list -r --json --depth -1", {
-        cwd: rootDirectory,
-        encoding: "utf8",
-      }).trim();
-      /**
-       * @type {Array<{
-       *   name: string;
-       *   path: string; // absolute path
-       *   private: boolean;
-       *   version?: string;
-       * }>}
-       */
-      let workspaces = JSON.parse(stdout);
-      workspaces = workspaces.map(({ name, path }) => ({ name, path }));
-      return workspaces;
+      let workspaces = [];
+      try {
+        // this can fail if not running in a monorepo
+        let stdout = exec("pnpm list -r --json --depth -1", {
+          cwd: rootDirectory,
+          encoding: "utf8",
+          stdio: ["ignore", "pipe", "ignore"],
+        }).trim();
+        /**
+         * @type {Array<{
+         *   name: string;
+         *   path: string; // absolute path
+         *   private: boolean;
+         *   version?: string;
+         * }>}
+         */
+        let parsedWorkspaces = JSON.parse(stdout);
+        workspaces = parsedWorkspaces.map(({ name, path }) => ({ name, path }));
+        return workspaces;
+      } catch (error) {
+        // @TODO: consider if we should surface this error to the user
+        // it could be a config issue if they expect to find workspaces :thinking:
+        debug("Error getting workspaces", error);
+        return workspaces;
+      }
     }
     case "yarn-classic": {
-      // Silent still prints out some character escape sequences at the beginning that `trim` / `trimStart` doesn't remove
-      // Passing `--json` changes the output to be a stringified object of: `log` and `data`
-      // where `data` is a stringified object of workspace names and their dependencies
-      let stdout = exec("yarn --silent --json workspaces info", {
-        cwd: rootDirectory,
-        encoding: "utf8",
-      }).trim();
-      let output = JSON.parse(stdout);
-      /**
-       * @type {{
-       *   [name: string]: {
-       *     location: string; // relative path
-       *     workspaceDependencies: string[];
-       *     mismatchedWorkspaceDependencies: string[]
-       *   }
-       * }}
-       */
-      let workspaces = JSON.parse(output.data);
+      let workspaces = [];
       // Yarn Classic does not include the root package.
       let rootPackageJSONPath = path.join(rootDirectory, "package.json");
       let rootPackageJSON = JSON.parse(
         readFileSync(rootPackageJSONPath, { encoding: "utf8" }),
       );
+      workspaces.push({
+        name: rootPackageJSON.name,
+        path: rootDirectory,
+      });
+      try {
+        // Silent still prints out some character escape sequences at the beginning that `trim` / `trimStart` doesn't remove
+        // Passing `--json` changes the output to be a stringified object of: `log` and `data`
+        // where `data` is a stringified object of workspace names and their dependencies
+        let stdout = exec("yarn --silent --json workspaces info", {
+          cwd: rootDirectory,
+          encoding: "utf8",
+          stdio: ["ignore", "pipe", "ignore"],
+        }).trim();
+        let output = JSON.parse(stdout);
+        /**
+         * @type {{
+         *   [name: string]: {
+         *     location: string; // relative path
+         *     workspaceDependencies: string[];
+         *     mismatchedWorkspaceDependencies: string[]
+         *   }
+         * }}
+         */
+        let parsedWorkspaces = JSON.parse(output.data);
 
-      return [
-        {
-          name: rootPackageJSON.name,
-          path: rootDirectory,
-        },
-        ...Object.entries(workspaces).map(([name, { location }]) => ({
-          name,
-          path: path.join(rootDirectory, location),
-        })),
-      ];
+        return [
+          ...workspaces,
+          ...Object.entries(parsedWorkspaces).map(([name, { location }]) => ({
+            name,
+            path: path.join(rootDirectory, location),
+          })),
+        ];
+      } catch (error) {
+        debug("Error getting workspaces", error);
+        return workspaces;
+      }
     }
     case "yarn-berry": {
-      // http://ndjson.org/
-      let ndJSONWorkspaces = exec("yarn workspaces list --json", {
-        cwd: rootDirectory,
-        encoding: "utf8",
-      });
+      let workspaces = [];
+      try {
+        // http://ndjson.org/
+        let ndJSONWorkspaces = exec("yarn workspaces list --json", {
+          cwd: rootDirectory,
+          encoding: "utf8",
+          stdio: ["ignore", "pipe", "ignore"],
+        });
 
-      if (ndJSONWorkspaces !== "") {
-        /**
-         * @type {Array<{
-         *   name: string;
-         *   location: string; // relative path
-         * }>}
-         */
-        let workspaces = ndJSONWorkspaces
-          .replace(/\n*$/, "") // strip out trailing new line
-          .split("\n") // split on new line
-          .map((str) => JSON.parse(str)); // parse each workspace
+        if (ndJSONWorkspaces !== "") {
+          /**
+           * @type {Array<{
+           *   name: string;
+           *   location: string; // relative path
+           * }>}
+           */
+          let parsedWorkspaces = ndJSONWorkspaces
+            .replace(/\n*$/, "") // strip out trailing new line
+            .split("\n") // split on new line
+            .map((str) => JSON.parse(str)); // parse each workspace
 
-        return workspaces.map(({ location, name }) => ({
-          name,
-          path: path.join(rootDirectory, location),
-        }));
+          return parsedWorkspaces.map(({ location, name }) => ({
+            name,
+            path: path.join(rootDirectory, location),
+          }));
+        }
+      } catch (error) {
+        debug("Error getting workspaces", error);
+        return workspaces;
       }
       return [];
     }
@@ -532,6 +557,9 @@ export async function start({ rootDirectory, logger, args }) {
       });
       debug("Workspaces", JSON.stringify(workspaces, null, 2));
 
+      let rootDependencies = getDependencies({ path: rootDirectory });
+      debug("Root dependencies", JSON.stringify(rootDependencies, null, 2));
+
       let workspaceDependencies = workspaces.map(({ path }) =>
         getDependencies({ path }),
       );
@@ -572,10 +600,21 @@ export async function start({ rootDirectory, logger, args }) {
       // check versionStrategy
       if (initialConfig.versionStrategy === "pin") {
         // check if all dependencies are pinned
-        let unpinnedDependencies = getUnpinnedDependencies({
+        let monorepoUnpinnedDependencies = getUnpinnedDependencies({
           workspaceDependencies,
           overrides: initialConfig.overrides,
         });
+
+        let rootUnpinnedDependencies = getUnpinnedDependencies({
+          workspaceDependencies: [rootDependencies],
+          overrides: initialConfig.overrides,
+        });
+
+        let unpinnedDependencies = {
+          ...(monorepoUnpinnedDependencies || {}),
+          ...(rootUnpinnedDependencies || {}),
+        };
+
         debug(
           "Unpinned dependencies",
           JSON.stringify(unpinnedDependencies, null, 2),

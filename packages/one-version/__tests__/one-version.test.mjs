@@ -7,7 +7,7 @@ import { getUnpinnedDependencies, start } from "../one-version.mjs";
 describe("one-version unit tests", () => {
   test("supports help command", async () => {
     let logs = [];
-    const logger = {
+    let logger = {
       log: (...args) => {
         logs.push(args.join(" "));
       },
@@ -25,7 +25,7 @@ describe("one-version unit tests", () => {
 
   test("bails on unknown commands", async () => {
     let logs = [];
-    const logger = {
+    let logger = {
       log: (...args) => {
         logs.push(args.join(" "));
       },
@@ -43,7 +43,7 @@ describe("one-version unit tests", () => {
 
   describe("getUnpinnedDependencies", () => {
     test("returns empty array when no dependencies are found", () => {
-      const workspaceDependencies = [
+      let workspaceDependencies = [
         {
           name: "testing",
           dependencies: {},
@@ -51,7 +51,7 @@ describe("one-version unit tests", () => {
           peerDependencies: {},
         },
       ];
-      const result = getUnpinnedDependencies({
+      let result = getUnpinnedDependencies({
         workspaceDependencies,
         overrides: undefined,
       });
@@ -60,7 +60,7 @@ describe("one-version unit tests", () => {
     });
 
     test("Covers the core edge cases", () => {
-      const workspaceDependencies = [
+      let workspaceDependencies = [
         {
           name: "testing",
           dependencies: {
@@ -93,7 +93,7 @@ describe("one-version unit tests", () => {
           },
         },
       ];
-      const result = getUnpinnedDependencies({
+      let result = getUnpinnedDependencies({
         workspaceDependencies,
         overrides: undefined,
       });
@@ -121,7 +121,7 @@ describe("one-version unit tests", () => {
     });
 
     test("Allows overriding dependencies", () => {
-      const workspaceDependencies = [
+      let workspaceDependencies = [
         {
           name: "testing",
           dependencies: {
@@ -133,7 +133,7 @@ describe("one-version unit tests", () => {
           },
         },
       ];
-      const result = getUnpinnedDependencies({
+      let result = getUnpinnedDependencies({
         workspaceDependencies,
         overrides: {
           next: {
@@ -154,8 +154,8 @@ let __filename = fileURLToPath(import.meta.url);
 let __dirname = path.dirname(__filename);
 
 describe("one-version integration tests", () => {
-  test("bun", async () => {
-    const targetDir = path.join(__dirname, "..", "__fixtures__", "bun");
+  test("bun-monorepo", async () => {
+    let targetDir = path.join(__dirname, "..", "__fixtures__", "bun-monorepo");
     let logs = [];
     let errors = [];
     let logger = {
@@ -179,8 +179,8 @@ describe("one-version integration tests", () => {
     assert.match(logs[0], /typescript/);
   });
 
-  test("npm", async () => {
-    const targetDir = path.join(__dirname, "..", "__fixtures__", "npm");
+  test("npm-monorepo", async () => {
+    let targetDir = path.join(__dirname, "..", "__fixtures__", "npm-monorepo");
     let logs = [];
     let errors = [];
     let logger = {
@@ -204,12 +204,39 @@ describe("one-version integration tests", () => {
     assert.match(logs[0], /typescript/);
   });
 
-  test("yarn-classic", async () => {
-    const targetDir = path.join(
+  test("npm-single-package", async () => {
+    let targetDir = path.join(
       __dirname,
       "..",
       "__fixtures__",
-      "yarn-classic",
+      "npm-single-package",
+    );
+    let logs = [];
+    let errors = [];
+    let logger = {
+      log(...args) {
+        logs.push(args.join(" "));
+      },
+      error(...args) {
+        errors.push(args.join(" "));
+      },
+    };
+    let { statusCode } = await start({
+      rootDirectory: targetDir,
+      logger,
+      args: ["check"],
+    });
+
+    assert.equal(statusCode, 0);
+    assert.match(logs[0], /One Version Rule Success/);
+  });
+
+  test("yarn-classic-monorepo", async () => {
+    let targetDir = path.join(
+      __dirname,
+      "..",
+      "__fixtures__",
+      "yarn-classic-monorepo",
     );
     let logs = [];
     let errors = [];
@@ -234,8 +261,40 @@ describe("one-version integration tests", () => {
     assert.match(logs[0], /typescript/);
   });
 
-  test("yarn-berry", async () => {
-    const targetDir = path.join(__dirname, "..", "__fixtures__", "yarn-berry");
+  test("yarn-classic-single-package", async () => {
+    let targetDir = path.join(
+      __dirname,
+      "..",
+      "__fixtures__",
+      "yarn-classic-single-package",
+    );
+    let logs = [];
+    let errors = [];
+    let logger = {
+      log(...args) {
+        logs.push(args.join(" "));
+      },
+      error(...args) {
+        errors.push(args.join(" "));
+      },
+    };
+    let { statusCode } = await start({
+      rootDirectory: targetDir,
+      logger,
+      args: ["check"],
+    });
+
+    assert.equal(statusCode, 0);
+    assert.match(logs[0], /One Version Rule Success/);
+  });
+
+  test("yarn-berry-monorepo", async () => {
+    let targetDir = path.join(
+      __dirname,
+      "..",
+      "__fixtures__",
+      "yarn-berry-monorepo",
+    );
     let logs = [];
     let errors = [];
     let logger = {
@@ -259,8 +318,35 @@ describe("one-version integration tests", () => {
     assert.match(logs[0], /typescript/);
   });
 
-  test("pnpm", async () => {
-    const targetDir = path.join(__dirname, "..", "__fixtures__", "pnpm");
+  test("yarn-berry-single-package", async () => {
+    let targetDir = path.join(
+      __dirname,
+      "..",
+      "__fixtures__",
+      "yarn-berry-single-package",
+    );
+    let logs = [];
+    let errors = [];
+    let logger = {
+      log(...args) {
+        logs.push(args.join(" "));
+      },
+      error(...args) {
+        errors.push(args.join(" "));
+      },
+    };
+    let { statusCode } = await start({
+      rootDirectory: targetDir,
+      logger,
+      args: ["check"],
+    });
+
+    assert.equal(statusCode, 0);
+    assert.match(logs[0], /One Version Rule Success/);
+  });
+
+  test("pnpm-monorepo", async () => {
+    let targetDir = path.join(__dirname, "..", "__fixtures__", "pnpm-monorepo");
     let logs = [];
     let errors = [];
     let logger = {
@@ -284,8 +370,40 @@ describe("one-version integration tests", () => {
     assert.match(logs[0], /typescript/);
   });
 
-  test("missing", async () => {
-    const targetDir = path.join(__dirname, "..", "__fixtures__", "missing");
+  test("pnpm-single-package", async () => {
+    let targetDir = path.join(
+      __dirname,
+      "..",
+      "__fixtures__",
+      "pnpm-single-package",
+    );
+    let logs = [];
+    let errors = [];
+    let logger = {
+      log(...args) {
+        logs.push(args.join(" "));
+      },
+      error(...args) {
+        errors.push(args.join(" "));
+      },
+    };
+    let { statusCode } = await start({
+      rootDirectory: targetDir,
+      logger,
+      args: ["check"],
+    });
+
+    assert.equal(statusCode, 0);
+    assert.match(logs[0], /One Version Rule Success/);
+  });
+
+  test("missing-package-manager-monorepo", async () => {
+    let targetDir = path.join(
+      __dirname,
+      "..",
+      "__fixtures__",
+      "missing-package-manager-monorepo",
+    );
     let logs = [];
     let errors = [];
     let logger = {
@@ -307,12 +425,40 @@ describe("one-version integration tests", () => {
     assert.match(errors[0], /Could not infer package manager!/);
   });
 
-  test("bun - configured and allowed", async () => {
-    const targetDir = path.join(
+  test("missing-package-manager-single-package", async () => {
+    let targetDir = path.join(
       __dirname,
       "..",
       "__fixtures__",
-      "bun-configured",
+      "missing-package-manager-single-package",
+    );
+    let logs = [];
+    let errors = [];
+    let logger = {
+      log(...args) {
+        logs.push(args.join(" "));
+      },
+      error(...args) {
+        errors.push(args.join(" "));
+      },
+    };
+    let { statusCode } = await start({
+      rootDirectory: targetDir,
+      logger,
+      args: ["check"],
+    });
+
+    // should fail - mismatch of typescript dependencies
+    assert.equal(statusCode, 1);
+    assert.match(errors[0], /Could not infer package manager!/);
+  });
+
+  test("bun - configured and allowed - monorepo", async () => {
+    let targetDir = path.join(
+      __dirname,
+      "..",
+      "__fixtures__",
+      "bun-configured-monorepo",
     );
     let logs = [];
     let errors = [];
@@ -338,12 +484,43 @@ describe("one-version integration tests", () => {
     assert.match(logs[0], /One Version Rule Success/);
   });
 
-  test("bun - configured and pinned versions", async () => {
-    const targetDir = path.join(
+  test("bun - configured and allowed - single package", async () => {
+    let targetDir = path.join(
       __dirname,
       "..",
       "__fixtures__",
-      "bun-configured-pinned",
+      "bun-configured-single-package",
+    );
+    let logs = [];
+    let errors = [];
+    let logger = {
+      log(...args) {
+        logs.push(args.join(" "));
+      },
+      error(...args) {
+        errors.push(args.join(" "));
+      },
+    };
+    let { statusCode } = await start({
+      rootDirectory: targetDir,
+      logger,
+      args: ["check"],
+    });
+
+    // should pass - configured overrides for typescript dependency
+    assert.equal(statusCode, 0);
+
+    assert.equal(errors.length, 0);
+    // single log line with multiple new-lines
+    assert.match(logs[0], /One Version Rule Success/);
+  });
+
+  test("bun - configured and pinned versions - monorepo", async () => {
+    let targetDir = path.join(
+      __dirname,
+      "..",
+      "__fixtures__",
+      "bun-configured-pinned-monorepo",
     );
     let logs = [];
     let errors = [];
@@ -365,6 +542,36 @@ describe("one-version integration tests", () => {
     assert.equal(statusCode, 1);
 
     assert.equal(logs.length, 2);
+    assert.match(logs[0], /One Version Rule Failure/);
+  });
+
+  test("bun - configured and pinned versions - single package", async () => {
+    let targetDir = path.join(
+      __dirname,
+      "..",
+      "__fixtures__",
+      "bun-configured-pinned-single-package",
+    );
+    let logs = [];
+    let errors = [];
+    let logger = {
+      log(...args) {
+        logs.push(args.join(" "));
+      },
+      error(...args) {
+        errors.push(args.join(" "));
+      },
+    };
+    let { statusCode } = await start({
+      rootDirectory: targetDir,
+      logger,
+      args: ["check"],
+    });
+
+    // should fail because of loose deps
+    assert.equal(statusCode, 1);
+
+    assert.equal(logs.length, 1);
     assert.match(logs[0], /One Version Rule Failure/);
   });
 });
