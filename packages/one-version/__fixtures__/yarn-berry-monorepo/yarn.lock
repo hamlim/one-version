@@ -30,6 +30,8 @@ __metadata:
     react: "npm:18.3.1"
     react-dom: "npm:18.3.1"
     typescript: "npm:^5"
+  peerDependencies:
+    next: 15.0.1-canary.0
   languageName: unknown
   linkType: soft
 
@@ -40,6 +42,8 @@ __metadata:
     react: "npm:18.3.1"
     react-dom: "npm:18.3.1"
     typescript: "npm:^5.4"
+  peerDependencies:
+    next: 15.0.1-canary.0
   languageName: unknown
   linkType: soft
 
@@ -50,6 +54,8 @@ __metadata:
     react: "npm:18.3.1"
     react-dom: "npm:18.3.1"
     typescript: "npm:5.4.5"
+  peerDependencies:
+    next: 15.0.1-canary.0
   languageName: unknown
   linkType: soft
 

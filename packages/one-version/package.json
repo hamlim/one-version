@@ -1,6 +1,6 @@
 {
   "name": "one-version",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "homepage": "https://one-version.vercel.app/",
   "description": "A strict dependency conformance tool for (mono)repos!",
   "repository": {
@@ -18,7 +18,7 @@
     "typescript": "5.4.5"
   },
   "dependencies": {
-    "fast-glob": "3.3.2"
+    "tinyglobby": "0.2.14"
   },
   "scripts": {
     "type-check": "tsc -p ./tsconfig.json",

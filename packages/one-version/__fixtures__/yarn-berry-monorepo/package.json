@@ -1,5 +1,7 @@
 {
   "private": true,
-  "workspaces": ["libs/*"],
-  "packageManager": "yarn@4.1.1"
+  "workspaces": [
+    "libs/*"
+  ],
+  "packageManager": "yarn@4.9.1"
 }

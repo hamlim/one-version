@@ -1,5 +1,9 @@
 ### Unreleased:
 
+### [0.3.1] - June 2nd, 2025
+
+Replace internal dependency on `fast-glob` with `tinyglobby`. There should be no changes for end user behavior!
+
 ### [0.3.0] - May 27th, 2025
 
 **No breaking Changes**

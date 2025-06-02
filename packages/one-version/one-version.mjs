@@ -1,7 +1,7 @@
 import { execSync as exec } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import path, { join as pathJoin } from "node:path";
-import fg from "fast-glob";
+import { globSync } from "tinyglobby";
 
 import { createDebug } from "./utils/create-debug.mjs";
 import { parse } from "./utils/jsonc-parser.mjs";
@@ -203,7 +203,7 @@ function getWorkspaces({ rootDirectory, packageManager }) {
 
       let workspaces = [];
       for (let workspaceGlob of workspaceGlobs) {
-        let workspacePaths = fg.sync(workspaceGlob, {
+        let workspacePaths = globSync(workspaceGlob, {
           cwd: rootDirectory,
           absolute: true,
           onlyDirectories: true,
@@ -227,7 +227,7 @@ function getWorkspaces({ rootDirectory, packageManager }) {
 
       let workspaces = [];
       for (let workspaceGlob of workspaceGlobs) {
-        let workspacePaths = fg.sync(workspaceGlob, {
+        let workspacePaths = globSync(workspaceGlob, {
           cwd: rootDirectory,
           absolute: true,
           onlyDirectories: true,
